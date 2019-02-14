@@ -1,4 +1,6 @@
-# nRF9160 is an ARM Cortex M33 SiP (system in package) with LTE modem.
+# nRF9160
+
+Nordicsemi nRF9160 is an ARM Cortex M33 SiP (system in package) with LTE modem.
 
 Connect UART pins as follows:
 
