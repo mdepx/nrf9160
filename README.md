@@ -30,4 +30,15 @@ Connect SWD pins as follows:
 ### Build under FreeBSD
     $ make
 
+### Build openocd
+    $ git clone https://github.com/bukinr/openocd-nrf9160
+    $ cd openocd-nrf9160
+    $ ./bootstrap
+    $ ./configure --enable-jlink
+    $ gmake
+
+### Program the chip
+    $ export OPENOCD_PATH=/path/to/openocd-nrf9160
+    $ sudo ${OPENOCD_PATH}/src/openocd -s ${OPENOCD_PATH}/tcl -f interface/jlink.cfg -c 'transport select swd; adapter_khz 1000' -f target/nrf9160.cfg -c "program nrf9160.elf 0 reset verify exit"
+
 ![alt text](https://raw.githubusercontent.com/osfive/nrf9160/master/images/nrf9160.jpg)
