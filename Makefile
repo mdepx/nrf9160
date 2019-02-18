@@ -7,28 +7,47 @@ OBJCOPY =	${CROSS_COMPILE}objcopy
 
 LDSCRIPT =	${.CURDIR}/ldscript
 
-OBJECTS =	main.o						\
+OBJECTS =	alloc.o						\
+		main.o						\
 		osfive/sys/arm/nordicsemi/nrf_uarte.o		\
+		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
+		osfive/sys/arm/nordicsemi/nrf9160_power.o	\
+		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
+		osfive/sys/arm/arm/machdep.o			\
 		osfive/sys/arm/arm/nvic.o			\
 		osfive/sys/arm/arm/trap.o			\
 		osfive/sys/arm/arm/exception.o			\
+		osfive/sys/kern/kern_malloc_fl.o		\
 		osfive/sys/kern/subr_prf.o			\
 		osfive/sys/kern/subr_console.o			\
 		osfive/sys/kern/kern_panic.o			\
 		start.o
 
-LIBRARIES = LIBC
+OBJECTS_LINK =		\
+  ${.CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
+  ${.CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/liboberon_2.0.5.a
+
+LIBRARIES = LIBC LIBAEABI MBEDTLS_MDSHA
 
 CFLAGS =	-mthumb -mcpu=cortex-m4		\
 		-nostdlib -fno-builtin-printf	\
 		-g -Wall -Werror
+
+CFLAGS += -g -nostdinc 						\
+	-fno-builtin-printf -ffreestanding -Wall		\
+	-Wredundant-decls -Wnested-externs			\
+	-Wstrict-prototypes -Wmissing-prototypes		\
+	-Wpointer-arith -Winline -Wcast-qual			\
+	-Wundef -Wmissing-include-dirs -Werror
 
 all:	compile link
 
 clean:
 	rm -f ${OBJECTS:M*} ${APP}.elf
 
+.include "osfive/lib/libaeabi/Makefile.inc"
 .include "osfive/lib/libc/Makefile.inc"
+.include "osfive/lib/mbedtls/Makefile.inc"
 .include "osfive/mk/bsd.user.mk"
 .include "osfive/mk/bsd.compile.mk"
 .include "osfive/mk/bsd.link.mk"
