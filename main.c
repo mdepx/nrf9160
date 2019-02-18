@@ -59,7 +59,7 @@ void
 app_main(void)
 {
 
-	uarte_init(&uarte_sc, UARTE0_BASE | NRF_SECURE_ACCESS,
+	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
 
