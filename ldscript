@@ -1,7 +1,9 @@
 MEMORY
 {
-	flash   (rx)  : ORIGIN = 0x00000000,  LENGTH = 512K
-	sram    (rwx) : ORIGIN = 0x20000000,  LENGTH = 64K
+	flash   (rx)  : ORIGIN = 0x00000000, LENGTH = 1M
+	sram0   (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
+	sram1   (rwx) : ORIGIN = 0x20020000, LENGTH = 64K
+	sram2   (rwx) : ORIGIN = 0x20030000, LENGTH = 64K
 }
 
 ENTRY(app_main)
@@ -9,30 +11,33 @@ SECTIONS
 {
 	. = 0x0;
 	.start . : {
-		*start.o(.text)
+		*start.o(.text);
 	} > flash
 
 	.text : {
-		*(.exception)
-		*(.text)
+		*(.exception);
+		*(.text*);
 	} > flash
 
 	.rodata : {
-		*(.rodata)
+		*(.rodata*);
 	} > flash
 
+	_smem = ABSOLUTE(.);
 	.data : {
 		_sdata = ABSOLUTE(.);
-		*(.data)
+		*(.data*);
 		_edata = ABSOLUTE(.);
-	} > sram AT > flash
+	} > sram0 AT > flash
 
 	.bss : {
 		_sbss = ABSOLUTE(.);
-		*(.bss COMMON)
+		*(.bss*)
+		*(COMMON)
 		_ebss = ABSOLUTE(.);
-	} > sram
+	} > sram0
 
 	. = ALIGN(4);
-	stack_top = 0x20010000;
+	. = . + 0x1000;
+	stack_top = .;
 }
