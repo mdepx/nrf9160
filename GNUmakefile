@@ -48,7 +48,6 @@ clean:
 include osfive/lib/libaeabi/Makefile.inc
 include osfive/lib/libc/Makefile.inc
 include osfive/lib/mbedtls/Makefile.inc
-include osfive/mk/gnu.cflags.mk
 include osfive/mk/gnu.user.mk
 include osfive/mk/gnu.compile.mk
 include osfive/mk/gnu.link.mk
