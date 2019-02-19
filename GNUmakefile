@@ -42,13 +42,11 @@ CFLAGS += -g -nostdinc 						\
 
 all:	compile link
 
-clean:
-	rm -f ${OBJECTS} ${OBJDIR}/${APP}.elf
-
 include osfive/lib/libaeabi/Makefile.inc
 include osfive/lib/libc/Makefile.inc
 include osfive/lib/mbedtls/Makefile.inc
-include osfive/mk/gnu.user.mk
+include osfive/mk/gnu.binutils.mk
+include osfive/mk/gnu.clean.mk
 include osfive/mk/gnu.compile.mk
 include osfive/mk/gnu.link.mk
-include osfive/mk/gnu.binutils.mk
+include osfive/mk/gnu.user.mk
