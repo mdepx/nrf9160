@@ -29,16 +29,12 @@ OBJECTS_LINK =		\
 
 LIBRARIES = LIBC LIBAEABI MBEDTLS_MDSHA
 
-CFLAGS =	-mthumb -mcpu=cortex-m4		\
-		-nostdlib -fno-builtin-printf	\
-		-g -Wall -Werror
-
-CFLAGS += -g -nostdinc 						\
-	-fno-builtin-printf -ffreestanding -Wall		\
-	-Wredundant-decls -Wnested-externs			\
-	-Wstrict-prototypes -Wmissing-prototypes		\
-	-Wpointer-arith -Winline -Wcast-qual			\
-	-Wundef -Wmissing-include-dirs -Werror
+CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
+	-fno-builtin-printf -ffreestanding		\
+	-Wredundant-decls -Wnested-externs		\
+	-Wstrict-prototypes -Wmissing-prototypes	\
+	-Wpointer-arith -Winline -Wcast-qual		\
+	-Wundef -Wmissing-include-dirs -Wall -Werror
 
 all:	compile link
 
