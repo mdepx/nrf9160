@@ -28,6 +28,9 @@
 #include <sys/console.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
+#include <nrfxlib/bsdlib/include/nrf_socket.h>
+#include <nrfxlib/bsdlib/include/bsd.h>
+#include <nrfxlib/bsdlib/include/bsd_os.h>
 
 #include <machine/frame.h>
 
