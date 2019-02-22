@@ -1,5 +1,3 @@
-.include "osfive/mk/bsd.pre.mk"
-
 APP =		nrf9160
 ARCH =		arm
 
@@ -11,18 +9,18 @@ LDSCRIPT =	${.CURDIR}/ldscript
 
 OBJECTS =	alloc.o						\
 		main.o						\
-		${OSDIR}/sys/arm/nordicsemi/nrf_uarte.o		\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_uicr.o	\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_power.o	\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_timer.o	\
-		${OSDIR}/sys/arm/arm/machdep.o			\
-		${OSDIR}/sys/arm/arm/nvic.o			\
-		${OSDIR}/sys/arm/arm/trap.o			\
-		${OSDIR}/sys/arm/arm/exception.o		\
-		${OSDIR}/sys/kern/kern_malloc_fl.o		\
-		${OSDIR}/sys/kern/subr_prf.o			\
-		${OSDIR}/sys/kern/subr_console.o		\
-		${OSDIR}/sys/kern/kern_panic.o			\
+		osfive/sys/arm/nordicsemi/nrf_uarte.o		\
+		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
+		osfive/sys/arm/nordicsemi/nrf9160_power.o	\
+		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
+		osfive/sys/arm/arm/machdep.o			\
+		osfive/sys/arm/arm/nvic.o			\
+		osfive/sys/arm/arm/trap.o			\
+		osfive/sys/arm/arm/exception.o			\
+		osfive/sys/kern/kern_malloc_fl.o		\
+		osfive/sys/kern/subr_prf.o			\
+		osfive/sys/kern/subr_console.o			\
+		osfive/sys/kern/kern_panic.o			\
 		start.o
 
 OBJECTS_LINK =		\
@@ -42,7 +40,7 @@ all:	__compile __link
 
 clean: __clean
 
-.include "${OSDIR}/lib/libaeabi/Makefile.inc"
-.include "${OSDIR}/lib/libc/Makefile.inc"
-.include "${OSDIR}/lib/mbedtls/Makefile.inc"
-.include "${OSDIR}/mk/bsd.post.mk"
+.include "osfive/lib/libaeabi/Makefile.inc"
+.include "osfive/lib/libc/Makefile.inc"
+.include "osfive/lib/mbedtls/Makefile.inc"
+.include "osfive/mk/bsd.mk"
