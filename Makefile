@@ -38,7 +38,7 @@ CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 
 all:	__compile __link
 
-clean: __clean
+clean:	__clean
 
 .include "osfive/lib/libaeabi/Makefile.inc"
 .include "osfive/lib/libc/Makefile.inc"
