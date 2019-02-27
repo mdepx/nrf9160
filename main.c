@@ -65,8 +65,11 @@ app_main(void)
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
 
+	printf("Hello world!\n");
+
 	bsd_init();
 
-	while (1)
-		printf("Hello world!\n");
+	printf("bsd library initialized\n");
+
+	while (1);
 }
