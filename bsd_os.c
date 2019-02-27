@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2018 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2019 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,48 +25,55 @@
  */
 
 #include <sys/cdefs.h>
-#include <sys/console.h>
-#include <sys/systm.h>
-#include <sys/malloc.h>
-#include <nrfxlib/bsdlib/include/nrf_socket.h>
-#include <nrfxlib/bsdlib/include/bsd.h>
 
-#include <machine/frame.h>
+#include <nrfxlib/bsdlib/include/bsd_os.h>
 
-#include <arm/arm/nvic.h>
-#include <arm/nordicsemi/nrf9160.h>
-
-struct uarte_softc uarte_sc;
-
-#define	UART_PIN_TX	22
-#define	UART_PIN_RX	21
-#define	UART_BAUDRATE	115200
-
-void app_main(void);
-
-static void
-uart_putchar(int c, void *arg)
+void
+bsd_os_init(void)
 {
-	struct uarte_softc *sc;
- 
-	sc = arg;
- 
-	if (c == '\n')
-		uarte_putc(sc, '\r');
 
-	uarte_putc(sc, c);
+}
+
+int32_t
+bsd_os_timedwait(uint32_t context, uint32_t timeout)
+{
+
+	return (0);
 }
 
 void
-app_main(void)
+bsd_os_errno_set(int errno_val)
 {
 
-	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
-	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
-	console_register(uart_putchar, (void *)&uarte_sc);
+}
 
-	bsd_init();
+void
+bsd_os_application_irq_clear(void)
+{
 
-	while (1)
-		printf("Hello world!\n");
+}
+
+void
+bsd_os_application_irq_set(void)
+{
+
+}
+
+void
+bsd_os_trace_irq_set(void)
+{
+
+}
+
+void
+bsd_os_trace_irq_clear(void)
+{
+
+}
+
+int32_t
+bsd_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
+{
+
+	return (0);
 }

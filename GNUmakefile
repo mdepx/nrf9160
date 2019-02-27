@@ -8,6 +8,7 @@ OBJCOPY =	${CROSS_COMPILE}objcopy
 LDSCRIPT =	${CURDIR}/ldscript
 
 OBJECTS =	alloc.o						\
+		bsd_os.o					\
 		main.o						\
 		osfive/sys/arm/nordicsemi/nrf_uarte.o		\
 		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
