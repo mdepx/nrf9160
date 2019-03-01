@@ -30,6 +30,7 @@
 #include <sys/malloc.h>
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
+#include <nrfxlib/bsdlib/include/bsd_os.h>
 
 #include <machine/frame.h>
 
@@ -37,12 +38,45 @@
 #include <arm/nordicsemi/nrf9160.h>
 
 struct uarte_softc uarte_sc;
+struct arm_nvic_softc nvic_sc;
 
 #define	UART_PIN_TX	22
 #define	UART_PIN_RX	21
 #define	UART_BAUDRATE	115200
+#define	NVIC_NINTRS	128
 
+void rpc_proxy_intr(void *arg, struct trapframe *tf, int irq);
+void trace_proxy_intr(void *arg, struct trapframe *tf, int irq);
+void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
+void IPC_IRQHandler(void);
 void app_main(void);
+
+static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
+	[28] = { rpc_proxy_intr, NULL },
+	[29] = { trace_proxy_intr, NULL },
+	[42] = { ipc_proxy_intr, NULL },
+};
+
+void
+rpc_proxy_intr(void *arg, struct trapframe *tf, int irq)
+{
+
+	bsd_os_application_irq_handler();
+}
+
+void
+trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
+{
+
+	bsd_os_trace_irq_handler();
+}
+
+void
+ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
+{
+
+	IPC_IRQHandler();
+}
 
 static void
 uart_putchar(int c, void *arg)
@@ -64,6 +98,9 @@ app_main(void)
 	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
+
+	arm_nvic_init(&nvic_sc, BASE_NVIC);
+	arm_nvic_install_intr_map(&nvic_sc, intr_map);
 
 	printf("Hello world!\n");
 
