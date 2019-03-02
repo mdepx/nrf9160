@@ -39,6 +39,7 @@
 
 struct uarte_softc uarte_sc;
 struct arm_nvic_softc nvic_sc;
+struct spu_softc spu_sc;
 
 #define	UART_PIN_TX	22
 #define	UART_PIN_RX	21
@@ -98,6 +99,8 @@ app_main(void)
 	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
+
+	spu_init(&spu_sc, BASE_SPU);
 
 	arm_nvic_init(&nvic_sc, BASE_NVIC);
 	arm_nvic_install_intr_map(&nvic_sc, intr_map);
