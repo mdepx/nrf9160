@@ -9,6 +9,7 @@ LDSCRIPT =	${.CURDIR}/ldscript
 
 OBJECTS =	alloc.o						\
 		bsd_os.o					\
+		errata.o					\
 		main.o						\
 		osfive/sys/arm/arm/machdep.o			\
 		osfive/sys/arm/arm/nvic.o			\

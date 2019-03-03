@@ -35,9 +35,12 @@
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
+#include "errata.h"
+
 struct uarte_softc uarte_sc;
 struct arm_nvic_softc nvic_sc;
 struct spu_softc spu_sc;
+struct power_softc power_sc;
 
 #define	UART_PIN_TX	22
 #define	UART_PIN_RX	21
@@ -141,17 +144,18 @@ app_main(void)
 {
 
 	clear_bss();
+	copy_sdata();
 
 	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
 
-	copy_sdata();
-
 	fl_init();
 	fl_add_region(0x20030000, 0x10000);
 
+	power_init(&power_sc, BASE_POWER);
 	spu_init(&spu_sc, BASE_SPU);
+
 	spu_periph_set_attr(&spu_sc, ID_CLOCK, 0, 0);
 	spu_periph_set_attr(&spu_sc, ID_RTC1, 0, 0);
 	spu_periph_set_attr(&spu_sc, ID_IPC, 0, 0);
@@ -169,6 +173,8 @@ app_main(void)
 	spu_periph_set_attr(&spu_sc, ID_TIMER0, 0, 0);
 	spu_periph_set_attr(&spu_sc, ID_TIMER1, 0, 0);
 	spu_periph_set_attr(&spu_sc, ID_TIMER2, 0, 0);
+
+	errata_init();
 
 	arm_nvic_init(&nvic_sc, BASE_NVIC);
 	arm_nvic_install_intr_map(&nvic_sc, intr_map);
