@@ -11,9 +11,10 @@ OBJECTS =	alloc.o						\
 		bsd_os.o					\
 		main.o						\
 		osfive/sys/arm/nordicsemi/nrf_uarte.o		\
-		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
 		osfive/sys/arm/nordicsemi/nrf9160_power.o	\
+		osfive/sys/arm/nordicsemi/nrf9160_spu.o		\
 		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
+		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
 		osfive/sys/arm/arm/machdep.o			\
 		osfive/sys/arm/arm/nvic.o			\
 		osfive/sys/arm/arm/trap.o			\
