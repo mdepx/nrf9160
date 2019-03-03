@@ -32,8 +32,6 @@
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 
-#include <machine/frame.h>
-
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
