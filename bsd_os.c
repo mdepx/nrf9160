@@ -26,17 +26,31 @@
 
 #include <sys/cdefs.h>
 
+#include <arm/arm/nvic.h>
+#include <arm/nordicsemi/nrf9160.h>
+
 #include <nrfxlib/bsdlib/include/bsd_os.h>
+
+extern struct arm_nvic_softc nvic_sc;
 
 void
 bsd_os_init(void)
 {
 
+	printf("%s\n", __func__);
+
+	arm_nvic_set_prio(&nvic_sc, ID_EGU1, 6);
+	arm_nvic_enable_intr(&nvic_sc, ID_EGU1);
+
+	arm_nvic_set_prio(&nvic_sc, ID_EGU2, 6);
+	arm_nvic_enable_intr(&nvic_sc, ID_EGU2);
 }
 
 int32_t
 bsd_os_timedwait(uint32_t context, uint32_t timeout)
 {
+
+	printf("%s\n", __func__);
 
 	return (0);
 }
@@ -45,6 +59,7 @@ void
 bsd_os_errno_set(int errno_val)
 {
 
+	printf("%s\n", __func__);
 }
 
 void

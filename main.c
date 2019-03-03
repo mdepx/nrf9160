@@ -52,10 +52,16 @@ void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void IPC_IRQHandler(void);
 void app_main(void);
 
+extern uint32_t _smem;
+extern uint32_t _sdata;
+extern uint32_t _edata;
+extern uint32_t _sbss;
+extern uint32_t _ebss;
+
 static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
-	[28] = { rpc_proxy_intr, NULL },
-	[29] = { trace_proxy_intr, NULL },
-	[42] = { ipc_proxy_intr, NULL },
+	[ID_EGU1] = { rpc_proxy_intr, NULL },
+	[ID_EGU2] = { trace_proxy_intr, NULL },
+	[ID_IPC] = { ipc_proxy_intr, NULL },
 };
 
 void
@@ -92,13 +98,60 @@ uart_putchar(int c, void *arg)
 	uarte_putc(sc, c);
 }
 
+static void
+clear_bss(void)
+{
+	uint8_t *sbss;
+	uint8_t *ebss;
+
+	sbss = (uint8_t *)&_sbss;
+	ebss = (uint8_t *)&_ebss;
+
+	while (sbss < ebss)
+		*sbss++ = 0;
+}
+
+static void
+copy_sdata(void)
+{
+	uint8_t *dst;
+	uint8_t *src;
+
+	/* Copy sdata to RAM if required */
+	for (src = (uint8_t *)&_smem, dst = (uint8_t *)&_sdata;
+	    dst < (uint8_t *)&_edata; )
+		*dst++ = *src++;
+}
+
+void
+bsd_recoverable_error_handler(uint32_t error)
+{
+
+	printf("%s: error %d\n", __func__, error);
+}
+
+void
+bsd_irrecoverable_error_handler(uint32_t error)
+{
+
+	printf("%s: error %d\n", __func__, error);
+	while (1);
+}
+
 void
 app_main(void)
 {
 
+	clear_bss();
+
 	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
+
+	copy_sdata();
+
+	fl_init();
+	fl_add_region(0x20030000, 0x10000);
 
 	spu_init(&spu_sc, BASE_SPU);
 	spu_periph_set_attr(&spu_sc, ID_CLOCK, 0, 0);
