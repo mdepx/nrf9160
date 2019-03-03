@@ -157,22 +157,7 @@ app_main(void)
 	spu_init(&spu_sc, BASE_SPU);
 
 	spu_periph_set_attr(&spu_sc, ID_CLOCK, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_RTC1, 0, 0);
 	spu_periph_set_attr(&spu_sc, ID_IPC, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_NVMC, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_VMC, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_GPIO, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_GPIOTE1, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_UARTE1, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_UARTE2, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_EGU1, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_EGU2, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_FPU, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_TWIM2, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_SPIM3, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_TIMER0, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_TIMER1, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_TIMER2, 0, 0);
 
 	errata_init();
 
