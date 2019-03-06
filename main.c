@@ -26,6 +26,7 @@
 
 #include <sys/cdefs.h>
 #include <sys/console.h>
+#include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
@@ -35,14 +36,13 @@
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
-#include "errata.h"
-
 struct uarte_softc uarte_sc;
 struct arm_nvic_softc nvic_sc;
 struct spu_softc spu_sc;
 struct power_softc power_sc;
+struct timer_softc timer0_sc;
 
-#define	UART_PIN_TX	22
+#define	UART_PIN_TX	29
 #define	UART_PIN_RX	21
 #define	UART_BAUDRATE	115200
 #define	NVIC_NINTRS	128
@@ -60,6 +60,7 @@ extern uint32_t _sbss;
 extern uint32_t _ebss;
 
 static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
+	[ID_TIMER0] = { timer_intr, &timer0_sc },
 	[ID_EGU1] = { rpc_proxy_intr, NULL },
 	[ID_EGU2] = { trace_proxy_intr, NULL },
 	[ID_IPC] = { ipc_proxy_intr, NULL },
@@ -82,6 +83,8 @@ trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
 void
 ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
 {
+
+	printf("%s\n", __func__);
 
 	IPC_IRQHandler();
 }
@@ -146,25 +149,25 @@ app_main(void)
 	clear_bss();
 	copy_sdata();
 
-	uarte_init(&uarte_sc, BASE_UARTE0 | PERIPH_SECURE_ACCESS,
+	uarte_init(&uarte_sc, BASE_UARTE0,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
+
+	printf("Hello world!\n");
 
 	fl_init();
 	fl_add_region(0x20030000, 0x10000);
 
 	power_init(&power_sc, BASE_POWER);
-	spu_init(&spu_sc, BASE_SPU);
 
-	spu_periph_set_attr(&spu_sc, ID_CLOCK, 0, 0);
-	spu_periph_set_attr(&spu_sc, ID_IPC, 0, 0);
-
-	errata_init();
-
-	arm_nvic_init(&nvic_sc, BASE_NVIC);
+	arm_nvic_init(&nvic_sc, BASE_SCS);
 	arm_nvic_install_intr_map(&nvic_sc, intr_map);
+	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
 
-	printf("Hello world!\n");
+	timer_init(&timer0_sc, BASE_TIMER0);
+	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
+
+	printf("Calling bsd_init()\n");
 
 	bsd_init();
 

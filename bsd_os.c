@@ -50,7 +50,7 @@ int32_t
 bsd_os_timedwait(uint32_t context, uint32_t timeout)
 {
 
-	printf("%s\n", __func__);
+	printf("%s: %d\n", __func__, timeout);
 
 	return (0);
 }
@@ -66,29 +66,39 @@ void
 bsd_os_application_irq_clear(void)
 {
 
+	printf("%s\n", __func__);
+	arm_nvic_clear_pending(&nvic_sc, ID_EGU1);
 }
 
 void
 bsd_os_application_irq_set(void)
 {
 
+	printf("%s\n", __func__);
+	arm_nvic_set_pending(&nvic_sc, ID_EGU1);
 }
 
 void
 bsd_os_trace_irq_set(void)
 {
 
+	printf("%s\n", __func__);
+	arm_nvic_set_pending(&nvic_sc, ID_EGU2);
 }
 
 void
 bsd_os_trace_irq_clear(void)
 {
 
+	arm_nvic_clear_pending(&nvic_sc, ID_EGU2);
+	printf("%s\n", __func__);
 }
 
 int32_t
 bsd_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
 {
+
+	printf("%s\n", __func__);
 
 	return (0);
 }
