@@ -31,13 +31,22 @@
 
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 
+#define	BSD_OS_DEBUG
+#undef	BSD_OS_DEBUG
+
+#ifdef	BSD_OS_DEBUG
+#define	dprintf(fmt, ...)	printf(fmt, ##__VA_ARGS__)
+#else
+#define	dprintf(fmt, ...)
+#endif
+
 extern struct arm_nvic_softc nvic_sc;
 
 void
 bsd_os_init(void)
 {
 
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 
 	arm_nvic_set_prio(&nvic_sc, ID_EGU1, 6);
 	arm_nvic_enable_intr(&nvic_sc, ID_EGU1);
@@ -50,7 +59,7 @@ int32_t
 bsd_os_timedwait(uint32_t context, uint32_t timeout)
 {
 
-	printf("%s: %d\n", __func__, timeout);
+	dprintf("%s: %d\n", __func__, timeout);
 
 	return (0);
 }
@@ -59,14 +68,14 @@ void
 bsd_os_errno_set(int errno_val)
 {
 
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 }
 
 void
 bsd_os_application_irq_clear(void)
 {
 
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 	arm_nvic_clear_pending(&nvic_sc, ID_EGU1);
 }
 
@@ -74,7 +83,7 @@ void
 bsd_os_application_irq_set(void)
 {
 
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 	arm_nvic_set_pending(&nvic_sc, ID_EGU1);
 }
 
@@ -82,7 +91,7 @@ void
 bsd_os_trace_irq_set(void)
 {
 
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 	arm_nvic_set_pending(&nvic_sc, ID_EGU2);
 }
 
@@ -90,15 +99,15 @@ void
 bsd_os_trace_irq_clear(void)
 {
 
+	dprintf("%s\n", __func__);
 	arm_nvic_clear_pending(&nvic_sc, ID_EGU2);
-	printf("%s\n", __func__);
 }
 
 int32_t
 bsd_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
 {
 
-	printf("%s\n", __func__);
+	dprintf("%s\n", __func__);
 
 	return (0);
 }
