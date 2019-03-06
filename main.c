@@ -47,11 +47,16 @@ struct timer_softc timer0_sc;
 #define	UART_BAUDRATE	115200
 #define	NVIC_NINTRS	128
 
+#define	LC_MAX_READ_LENGTH	128
+#define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
+
 void rpc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void trace_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void IPC_IRQHandler(void);
 void app_main(void);
+
+static const char cind[] = "AT+CIND?";
 
 extern uint32_t _smem;
 extern uint32_t _sdata;
@@ -83,8 +88,6 @@ trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
 void
 ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
 {
-
-	printf("%s\n", __func__);
 
 	IPC_IRQHandler();
 }
@@ -139,12 +142,34 @@ bsd_irrecoverable_error_handler(uint32_t error)
 {
 
 	printf("%s: error %d\n", __func__, error);
+
 	while (1);
+}
+
+static int
+at_cmd(int fd, const char *cmd, size_t size)
+{
+	uint8_t buffer[LC_MAX_READ_LENGTH];
+	int len;
+
+	printf("send: %s\n", cmd);
+
+	len = nrf_send(fd, cmd, size, 0);
+	if (len != size) {
+		printf("send failed\n");
+		return (-1);
+	}
+
+	len = nrf_recv(fd, buffer, LC_MAX_READ_LENGTH, 0);
+	printf("recv: %s\n", buffer);
+
+	return (0);
 }
 
 void
 app_main(void)
 {
+	int at_socket_fd;
 
 	clear_bss();
 	copy_sdata();
@@ -153,7 +178,7 @@ app_main(void)
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
 
-	printf("Hello world!\n");
+	printf("osfive initialized\n");
 
 	fl_init();
 	fl_add_region(0x20030000, 0x10000);
@@ -167,11 +192,16 @@ app_main(void)
 	timer_init(&timer0_sc, BASE_TIMER0);
 	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
 
-	printf("Calling bsd_init()\n");
-
 	bsd_init();
 
 	printf("bsd library initialized\n");
 
-	while (1);
+	at_socket_fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
+	if (at_socket_fd < 0)
+		printf("failed to create socket\n");
+
+	at_cmd(at_socket_fd, cind, AT_CMD_SIZE(cind));
+
+	while (1)
+		__asm __volatile("wfi");
 }
