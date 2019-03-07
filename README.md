@@ -19,6 +19,8 @@ Connect SWD pins as follows:
 | SWDCLK            | SWCLK                |
 | Ground            | Ground               |
 
+This app depends on the [secure bootloader for nRF9160](https://github.com/osfive/nrf9160-boot).
+
 ### Build under Linux or FreeBSD
     $ git clone --recursive https://github.com/osfive/nrf9160
     $ cd nrf9160
@@ -38,4 +40,5 @@ Connect SWD pins as follows:
       -f interface/jlink.cfg -c 'transport select swd; adapter_khz 1000' \
       -f target/nrf9160.cfg -c "program nrf9160.elf 0 reset verify exit"
 
+![alt text](https://raw.githubusercontent.com/osfive/nrf9160/master/images/nrf9160-dk.jpg)
 ![alt text](https://raw.githubusercontent.com/osfive/nrf9160/master/images/nrf9160.jpg)
