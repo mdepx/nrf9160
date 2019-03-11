@@ -7,7 +7,7 @@ OBJCOPY =	${CROSS_COMPILE}objcopy
 
 LDSCRIPT =	${.CURDIR}/ldscript
 
-OBJECTS =	alloc.o						\
+OBJECTS =							\
 		bsd_os.o					\
 		main.o						\
 		osfive/sys/arm/arm/machdep.o			\
@@ -19,12 +19,15 @@ OBJECTS =	alloc.o						\
 		osfive/sys/arm/nordicsemi/nrf9160_spu.o		\
 		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
 		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
+		osfive/sys/kern/kern_malloc.o			\
 		osfive/sys/kern/kern_malloc_fl.o		\
 		osfive/sys/kern/kern_panic.o			\
 		osfive/sys/kern/kern_timeout.o			\
 		osfive/sys/kern/subr_console.o			\
 		osfive/sys/kern/subr_prf.o			\
-		start.o
+		osfive/sys/kern/subr_usleep.o			\
+		start.o						\
+		test.o
 
 OBJECTS_LINK =		\
   ${.CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
