@@ -29,6 +29,8 @@
 #include <sys/callout.h>
 #include <sys/systm.h>
 #include <sys/malloc.h>
+#include <sys/thread.h>
+
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
@@ -105,31 +107,6 @@ uart_putchar(int c, void *arg)
 	uarte_putc(sc, c);
 }
 
-static void
-clear_bss(void)
-{
-	uint8_t *sbss;
-	uint8_t *ebss;
-
-	sbss = (uint8_t *)&_sbss;
-	ebss = (uint8_t *)&_ebss;
-
-	while (sbss < ebss)
-		*sbss++ = 0;
-}
-
-static void
-copy_sdata(void)
-{
-	uint8_t *dst;
-	uint8_t *src;
-
-	/* Copy sdata to RAM if required */
-	for (src = (uint8_t *)&_smem, dst = (uint8_t *)&_sdata;
-	    dst < (uint8_t *)&_edata; )
-		*dst++ = *src++;
-}
-
 void
 bsd_recoverable_error_handler(uint32_t error)
 {
@@ -171,8 +148,9 @@ app_main(void)
 {
 	int at_socket_fd;
 
-	clear_bss();
-	copy_sdata();
+	zero_bss();
+	relocate_data();
+	md_init();
 
 	uarte_init(&uarte_sc, BASE_UARTE0,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);

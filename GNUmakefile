@@ -10,29 +10,18 @@ LDSCRIPT =	${CURDIR}/ldscript
 OBJECTS =							\
 		bsd_os.o					\
 		main.o						\
-		osfive/sys/arm/arm/machdep.o			\
-		osfive/sys/arm/arm/nvic.o			\
-		osfive/sys/arm/arm/trap.o			\
-		osfive/sys/arm/arm/exception.o			\
 		osfive/sys/arm/nordicsemi/nrf_uarte.o		\
 		osfive/sys/arm/nordicsemi/nrf9160_power.o	\
 		osfive/sys/arm/nordicsemi/nrf9160_spu.o		\
 		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
 		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
-		osfive/sys/kern/kern_malloc.o			\
-		osfive/sys/kern/kern_malloc_fl.o		\
-		osfive/sys/kern/kern_panic.o			\
-		osfive/sys/kern/kern_timeout.o			\
-		osfive/sys/kern/subr_console.o			\
-		osfive/sys/kern/subr_prf.o			\
-		osfive/sys/kern/subr_usleep.o			\
 		start.o
 
 OBJECTS_LINK =		\
   ${CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
   ${CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/liboberon_2.0.5.a
 
-LIBRARIES = LIBC LIBAEABI MBEDTLS_MDSHA
+LIBRARIES = KERN ARM LIBC LIBAEABI MBEDTLS_MDSHA
 
 CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 	-fno-builtin-printf -ffreestanding		\
@@ -45,6 +34,7 @@ all:	__compile __link
 
 clean:	__clean
 
+include osfive/lib/kern/Makefile.inc
 include osfive/lib/libaeabi/Makefile.inc
 include osfive/lib/libc/Makefile.inc
 include osfive/lib/mbedtls/Makefile.inc

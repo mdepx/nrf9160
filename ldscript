@@ -24,18 +24,20 @@ SECTIONS
 		*(.rodata*);
 	} > flash
 
-	_smem = ABSOLUTE(.);
+	/* Ensure _smem is associated with the next section */
+	. = .;
+	PROVIDE(_smem = .);
 	.data : {
-		_sdata = ABSOLUTE(.);
+		PROVIDE(_sdata = .);
 		*(.data*);
-		_edata = ABSOLUTE(.);
+		PROVIDE(_edata = .);
 	} > sram2 AT > flash
 
 	.bss : {
-		_sbss = ABSOLUTE(.);
+		PROVIDE (_sbss = .);
 		*(.bss*)
 		*(COMMON)
-		_ebss = ABSOLUTE(.);
+		PROVIDE (_ebss = .);
 	} > sram2
 
 	. = ALIGN(4);
