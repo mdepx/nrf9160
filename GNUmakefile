@@ -26,8 +26,7 @@ OBJECTS =							\
 		osfive/sys/kern/subr_console.o			\
 		osfive/sys/kern/subr_prf.o			\
 		osfive/sys/kern/subr_usleep.o			\
-		start.o						\
-		test.o
+		start.o
 
 OBJECTS_LINK =		\
   ${CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
