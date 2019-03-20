@@ -60,12 +60,6 @@ void app_main(void);
 
 static const char cind[] = "AT+CIND?";
 
-extern uint32_t _smem;
-extern uint32_t _sdata;
-extern uint32_t _edata;
-extern uint32_t _sbss;
-extern uint32_t _ebss;
-
 static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
 	[ID_TIMER0] = { timer_intr, &timer0_sc },
 	[ID_EGU1] = { rpc_proxy_intr, NULL },
