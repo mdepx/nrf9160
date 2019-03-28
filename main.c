@@ -59,6 +59,15 @@ void IPC_IRQHandler(void);
 void app_main(void);
 
 static const char cind[] = "AT+CIND?";
+static const char subscribe[] = "AT+CEREG=5";
+static const char lock_bands[] = "AT%XBANDLOCK=2,\"10000001000000001100\"";
+static const char normal[] = "AT+CFUN=1";
+static const char edrx_req[] = "AT+CEDRXS=1,4,\"1000\"";
+static const char cgdcont[] __unused = "AT+CGDCONT?";
+static const char cgdcont_req[] __unused =
+    "AT+CGDCONT=1,\"IP\",\"IOT_apn\",0,0,0,1";
+static const char cgpaddr[] __unused = "AT+CGPADDR";
+static const char cesq[] = "AT+CESQ";
 
 static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
 	[ID_TIMER0] = { timer_intr, &timer0_sc },
@@ -137,10 +146,32 @@ at_cmd(int fd, const char *cmd, size_t size)
 	return (0);
 }
 
+static void
+lte_test(void *arg)
+{
+	int fd;
+
+	fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
+	if (fd < 0)
+		printf("failed to create socket\n");
+
+	at_cmd(fd, cind, AT_CMD_SIZE(cind));
+	at_cmd(fd, edrx_req, AT_CMD_SIZE(edrx_req));
+	at_cmd(fd, subscribe, AT_CMD_SIZE(subscribe));
+
+	/* Lock bands 3,4,13,20 */
+	at_cmd(fd, lock_bands, AT_CMD_SIZE(lock_bands));
+	at_cmd(fd, normal, AT_CMD_SIZE(normal));
+
+	while (1) {
+		at_cmd(fd, cesq, AT_CMD_SIZE(cesq));
+		raw_sleep(1000000);
+	}
+}
+
 void
 app_main(void)
 {
-	int at_socket_fd;
 
 	zero_bss();
 	relocate_data();
@@ -168,12 +199,7 @@ app_main(void)
 
 	printf("bsd library initialized\n");
 
-	at_socket_fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
-	if (at_socket_fd < 0)
-		printf("failed to create socket\n");
+	lte_test(NULL);
 
-	at_cmd(at_socket_fd, cind, AT_CMD_SIZE(cind));
-
-	while (1)
-		__asm __volatile("wfi");
+	panic("lte_test returned!\n");
 }
