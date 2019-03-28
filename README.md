@@ -2,12 +2,11 @@
 
 Nordicsemi nRF9160 is an ARM Cortex-M33 SiP (system in package) with LTE modem.
 
-Connect UART pins as follows:
+For nRF9160-DK connect micro usb cable to J4, for other boards connect UART pins as follows:
 
 | nRF9160          | UART-to-USB adapter  |
 | ----------------- | -------------------- |
-| P0.21 (RX)        | TX                   |
-| P0.22 (TX)        | RX                   |
+| P0.29 (TX)        | RX                   |
 
 UART baud rate: 115200
 
