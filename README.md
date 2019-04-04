@@ -20,10 +20,15 @@ Connect SWD pins as follows:
 
 This app depends on the [secure bootloader for nRF9160](https://github.com/osfive/nrf9160-boot).
 
-### Build under Linux or FreeBSD
+### Under Linux
+    $ sudo apt install gcc-arm-linux-gnueabi
+    $ export CROSS_COMPILE=arm-linux-gnueabi-
+### Under FreeBSD
+    $ sudo pkg install arm-none-eabi-gcc arm-none-eabi-binutils
+    $ export CROSS_COMPILE=arm-none-eabi-
+### Build
     $ git clone --recursive https://github.com/osfive/nrf9160
     $ cd nrf9160
-    $ export CROSS_COMPILE=arm-none-eabi-
     $ make
 
 ### Build openocd
