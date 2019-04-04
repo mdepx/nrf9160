@@ -32,11 +32,12 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/osfiv
     $ make
 
 ### Build openocd
+    $ sudo apt install pkg-config autotools-dev automake libtool
     $ git clone https://github.com/bukinr/openocd-nrf9160
     $ cd openocd-nrf9160
     $ ./bootstrap
     $ ./configure --enable-jlink
-    $ gmake
+    $ make
 
 ### Program the chip
     $ export OPENOCD_PATH=/path/to/openocd-nrf9160
