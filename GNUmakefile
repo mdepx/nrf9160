@@ -24,6 +24,7 @@ OBJECTS_LINK =		\
 LIBRARIES = KERN ARM LIBC LIBAEABI MBEDTLS_MDSHA
 
 CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
+	-fshort-enums					\
 	-fno-builtin-printf -ffreestanding		\
 	-Wredundant-decls -Wnested-externs		\
 	-Wstrict-prototypes -Wmissing-prototypes	\
