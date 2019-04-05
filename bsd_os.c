@@ -56,7 +56,7 @@ bsd_os_init(void)
 }
 
 int32_t
-bsd_os_timedwait(uint32_t context, uint32_t timeout)
+bsd_os_timedwait(uint32_t context, int32_t * p_timeout)
 {
 
 	dprintf("%s: %d\n", __func__, timeout);

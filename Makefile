@@ -17,9 +17,11 @@ OBJECTS =							\
 		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
 		start.o
 
+NRFXLIB =	${.CURDIR}/nrfxlib/
+
 OBJECTS_LINK =		\
-  ${.CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
-  ${.CURDIR}/nrfxlib/bsdlib/lib/cortex-m33/soft-float/liboberon_2.0.5.a
+  ${NRFXLIB}/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
+  ${NRFXLIB}/crypto/nrf_oberon/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
 LIBRARIES = KERN ARM LIBC LIBAEABI MBEDTLS_MDSHA
 
@@ -31,7 +33,7 @@ CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 	-Wpointer-arith -Winline -Wcast-qual		\
 	-Wundef -Wmissing-include-dirs -Wall -Werror
 
-all:	__compile __link
+all:	__compile __link __info
 
 clean:	__clean
 
