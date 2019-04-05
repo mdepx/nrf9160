@@ -23,7 +23,7 @@ OBJECTS_LINK =		\
   ${NRFXLIB}/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
   ${NRFXLIB}/crypto/nrf_oberon/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
-LIBRARIES = KERN ARM LIBC LIBAEABI MBEDTLS_MDSHA
+LIBRARIES = kern arm libc libaeabi mbedtls_mdsha
 
 CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 	-fshort-enums					\
