@@ -23,7 +23,8 @@ OBJECTS_LINK =		\
   ${NRFXLIB}/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
   ${NRFXLIB}/crypto/nrf_oberon/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
-LIBRARIES = kern arm libc libaeabi mbedtls_mdsha
+KERNEL = arm malloc
+LIBRARIES = libc libaeabi mbedtls_mdsha
 
 CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 	-fshort-enums					\
@@ -37,7 +38,6 @@ all:	__compile __link __info
 
 clean:	__clean
 
-.include "osfive/lib/kern/Makefile.inc"
 .include "osfive/lib/libaeabi/Makefile.inc"
 .include "osfive/lib/libc/Makefile.inc"
 .include "osfive/lib/mbedtls/Makefile.inc"
