@@ -64,8 +64,7 @@ static const char lock_bands[] = "AT%XBANDLOCK=2,\"10000001000000001100\"";
 static const char normal[] = "AT+CFUN=1";
 static const char edrx_req[] = "AT+CEDRXS=1,4,\"1000\"";
 static const char cgdcont[] __unused = "AT+CGDCONT?";
-static const char cgdcont_req[] __unused =
-    "AT+CGDCONT=1,\"IP\",\"IOT_apn\",0,0,0,1";
+static const char cgdcont_req[] = "AT+CGDCONT=0,\"IPv4v6\",\"internet.apn\"";
 static const char cgpaddr[] __unused = "AT+CGPADDR";
 static const char cesq[] = "AT+CESQ";
 
@@ -159,12 +158,19 @@ lte_test(void *arg)
 	at_cmd(fd, edrx_req, AT_CMD_SIZE(edrx_req));
 	at_cmd(fd, subscribe, AT_CMD_SIZE(subscribe));
 
-	/* Lock bands 3,4,13,20 */
+	/* Lock bands 3,4,13,20. */
 	at_cmd(fd, lock_bands, AT_CMD_SIZE(lock_bands));
+
+	/* Define PDP Context */
+	at_cmd(fd, cgdcont_req, AT_CMD_SIZE(cgdcont_req));
+
+	/* Normal mode. */
 	at_cmd(fd, normal, AT_CMD_SIZE(normal));
 
 	while (1) {
+		/* Extended signal quality */
 		at_cmd(fd, cesq, AT_CMD_SIZE(cesq));
+
 		raw_sleep(1000000);
 	}
 }
