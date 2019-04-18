@@ -36,5 +36,5 @@ all:	_compile _link _info
 
 clean:	_clean
 
-include osfive/mk/gnu.mk
-include osfive/mk/gnu.toolchain.mk
+include osfive/mk/default.mk
+include osfive/mk/gnu-toolchain.mk
