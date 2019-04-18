@@ -15,13 +15,15 @@ OBJECTS =							\
 		osfive/sys/arm/nordicsemi/nrf9160_spu.o		\
 		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
 		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
-		start.o
+		start.o						\
 
-NRFXLIB =	${CURDIR}/nrfxlib/
+NRFXLIB ?=	${CURDIR}/nrfxlib/
+BSDLIB =	${NRFXLIB}/bsdlib/
+OBERON =	${NRFXLIB}/crypto/nrf_oberon/
 
 OBJECTS_LINK =		\
-  ${NRFXLIB}/bsdlib/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
-  ${NRFXLIB}/crypto/nrf_oberon/lib/cortex-m33/soft-float/liboberon_3.0.0.a
+	${BSDLIB}/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a \
+	${OBERON}/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
 KERNEL = malloc
 LIBRARIES = libc libaeabi mbedtls_mdsha
@@ -34,9 +36,9 @@ CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 	-Wpointer-arith -Winline -Wcast-qual		\
 	-Wundef -Wmissing-include-dirs -Wall -Werror
 
-all:	__compile __link __info
+all:	_compile _link _info
 
-clean:	__clean
+clean:	_clean
 
 include osfive/lib/libaeabi/Makefile.inc
 include osfive/lib/libc/Makefile.inc
