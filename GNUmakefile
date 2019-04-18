@@ -1,10 +1,6 @@
 APP =		nrf9160
 MACHINE =	arm
 
-CC =		${CROSS_COMPILE}gcc
-LD =		${CROSS_COMPILE}ld
-OBJCOPY =	${CROSS_COMPILE}objcopy
-
 LDSCRIPT =	${CURDIR}/ldscript
 
 OBJECTS =							\
@@ -40,7 +36,5 @@ all:	_compile _link _info
 
 clean:	_clean
 
-include osfive/lib/libaeabi/Makefile.inc
-include osfive/lib/libc/Makefile.inc
-include osfive/lib/mbedtls/Makefile.inc
 include osfive/mk/gnu.mk
+include osfive/mk/gnu.toolchain.mk
