@@ -45,7 +45,7 @@ struct power_softc power_sc;
 struct timer_softc timer0_sc;
 
 #define	UART_PIN_TX	29
-#define	UART_PIN_RX	21
+#define	UART_PIN_RX	28
 #define	UART_BAUDRATE	115200
 #define	NVIC_NINTRS	128
 
@@ -68,7 +68,12 @@ static const char cgdcont_req[] = "AT+CGDCONT=0,\"IPv4v6\",\"internet.apn\"";
 static const char cgpaddr[] __unused = "AT+CGPADDR";
 static const char cesq[] = "AT+CESQ";
 
+char buffer[LC_MAX_READ_LENGTH];
+int buffer_fill;
+int ready_to_send;
+
 static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
+	[ID_UARTE0] = { uarte_intr, &uarte_sc },
 	[ID_TIMER0] = { timer_intr, &timer0_sc },
 	[ID_EGU1] = { rpc_proxy_intr, NULL },
 	[ID_EGU2] = { trace_proxy_intr, NULL },
@@ -146,6 +151,31 @@ at_cmd(int fd, const char *cmd, size_t size)
 }
 
 static void
+lte_at_client(void *arg)
+{
+	int fd;
+	int len;
+
+	fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
+	if (fd < 0)
+		printf("failed to create socket\n");
+
+	while (1) {
+		if (ready_to_send) {
+			nrf_send(fd, buffer, buffer_fill, 0);
+
+			ready_to_send = 0;
+			buffer_fill = 0;
+
+			len = nrf_recv(fd, buffer, LC_MAX_READ_LENGTH, 0);
+			if (len)
+				printf("%s\n", buffer);
+		}
+		raw_sleep(10000);
+	}
+}
+
+static void __unused
 lte_test(void *arg)
 {
 	int fd;
@@ -175,6 +205,16 @@ lte_test(void *arg)
 	}
 }
 
+static void
+nrf_input(int c, void *arg)
+{
+
+	if (c == 13)
+		ready_to_send = 1;
+	else if (buffer_fill < LC_MAX_READ_LENGTH)
+		buffer[buffer_fill++] = c;
+}
+
 void
 app_main(void)
 {
@@ -186,6 +226,7 @@ app_main(void)
 	uarte_init(&uarte_sc, BASE_UARTE0,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	console_register(uart_putchar, (void *)&uarte_sc);
+	uarte_register_callback(&uarte_sc, nrf_input, NULL);
 
 	printf("osfive initialized\n");
 
@@ -200,12 +241,15 @@ app_main(void)
 
 	timer_init(&timer0_sc, BASE_TIMER0);
 	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
+	arm_nvic_enable_intr(&nvic_sc, ID_UARTE0);
 
 	bsd_init();
 
 	printf("bsd library initialized\n");
 
-	lte_test(NULL);
+	buffer_fill = 0;
+	ready_to_send = 0;
+	lte_at_client(NULL);
 
 	panic("lte_test returned!\n");
 }
