@@ -3,15 +3,15 @@ MACHINE =	arm
 
 LDSCRIPT =	${CURDIR}/ldscript
 
-OBJECTS =							\
-		bsd_os.o					\
-		main.o						\
-		osfive/sys/arm/nordicsemi/nrf_uarte.o		\
-		osfive/sys/arm/nordicsemi/nrf9160_power.o	\
-		osfive/sys/arm/nordicsemi/nrf9160_spu.o		\
-		osfive/sys/arm/nordicsemi/nrf9160_timer.o	\
-		osfive/sys/arm/nordicsemi/nrf9160_uicr.o	\
-		start.o						\
+OBJECTS =								\
+		bsd_os.o						\
+		main.o							\
+		${OSDIR}/sys/arm/nordicsemi/nrf_uarte.o			\
+		${OSDIR}/sys/arm/nordicsemi/nrf9160_power.o		\
+		${OSDIR}/sys/arm/nordicsemi/nrf9160_spu.o		\
+		${OSDIR}/sys/arm/nordicsemi/nrf9160_timer.o		\
+		${OSDIR}/sys/arm/nordicsemi/nrf9160_uicr.o		\
+		start.o							\
 
 NRFXLIB ?=	${CURDIR}/nrfxlib/
 BSDLIB =	${NRFXLIB}/bsdlib/
@@ -32,7 +32,7 @@ CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc	\
 	-Wpointer-arith -Winline -Wcast-qual		\
 	-Wundef -Wmissing-include-dirs -Wall -Werror
 
-all:	_compile _link _info
+all:	_compile _link
 
 clean:	_clean
 
