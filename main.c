@@ -176,7 +176,7 @@ lte_at_client(void *arg)
 }
 
 static void __unused
-lte_test(void *arg)
+lte_test(void)
 {
 	int fd;
 
