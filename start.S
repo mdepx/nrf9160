@@ -29,7 +29,7 @@
 .thumb
 
 .word	stack_top	/* Stack top address */
-.word	app_main	/* Reset */
+.word	__start		/* Reset */
 .word	exception	/* NMI */
 .word	exception	/* Hard Fault */
 .word	exception	/* mm */

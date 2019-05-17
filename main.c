@@ -56,7 +56,6 @@ void rpc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void trace_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void IPC_IRQHandler(void);
-void app_main(void);
 
 static const char cind[] = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
@@ -215,13 +214,9 @@ nrf_input(int c, void *arg)
 		buffer[buffer_fill++] = c;
 }
 
-void
-app_main(void)
+int
+app_init(void)
 {
-
-	zero_bss();
-	relocate_data();
-	md_init();
 
 	uarte_init(&uarte_sc, BASE_UARTE0,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
@@ -243,6 +238,13 @@ app_main(void)
 	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
 	arm_nvic_enable_intr(&nvic_sc, ID_UARTE0);
 
+	return (0);
+}
+
+int
+main(void)
+{
+
 	bsd_init();
 
 	printf("bsd library initialized\n");
@@ -252,4 +254,6 @@ app_main(void)
 	lte_at_client(NULL);
 
 	panic("lte_test returned!\n");
+
+	return (0);
 }

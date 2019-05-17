@@ -59,7 +59,7 @@ int32_t
 bsd_os_timedwait(uint32_t context, int32_t * p_timeout)
 {
 
-	dprintf("%s: %d\n", __func__, timeout);
+	dprintf("%s: %p\n", __func__, p_timeout);
 
 	return (0);
 }
