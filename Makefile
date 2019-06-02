@@ -4,6 +4,7 @@ MACHINE =	arm
 LDSCRIPT =	${CURDIR}/ldscript
 
 OBJDIR =	obj
+OSDIR =		mdepx
 OBJECTS =								\
 		bsd_os.o						\
 		main.o							\
@@ -36,7 +37,7 @@ all:	${OBJDIR}/${APP}.elf
 clean:
 	@rm -f ${OBJECTS} ${OBJDIR}/${APP}.*
 
-include osfive/lib/libaeabi/Makefile.inc
-include osfive/lib/libc/Makefile.inc
-include osfive/lib/mbedtls/Makefile.inc
-include osfive/mk/default.mk
+include ${OSDIR}/lib/libaeabi/Makefile.inc
+include ${OSDIR}/lib/libc/Makefile.inc
+include ${OSDIR}/lib/mbedtls/Makefile.inc
+include ${OSDIR}/mk/default.mk

@@ -1,6 +1,6 @@
-[submodule "osfive"]
-	path = osfive
-	url = https://github.com/osfive/osfive
 [submodule "nrfxlib"]
 	path = nrfxlib
 	url = https://github.com/NordicPlayground/nrfxlib
+[submodule "mdepx"]
+	path = mdepx
+	url = https://github.com/machdep/mdepx
