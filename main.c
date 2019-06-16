@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2018 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2018-2019 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,6 +31,11 @@
 #include <sys/malloc.h>
 #include <sys/thread.h>
 
+#include <sys/mbuf.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
@@ -52,20 +57,31 @@ struct timer_softc timer0_sc;
 #define	LC_MAX_READ_LENGTH	128
 #define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
 
+#define	TCP_HOST	"machdep.com"
+#define	TCP_PORT	80
+
 void rpc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void trace_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void IPC_IRQHandler(void);
 
-static const char cind[] = "AT+CIND?";
+static const char cind[] __unused = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
-static const char lock_bands[] = "AT%XBANDLOCK=2,\"10000001000000001100\"";
+static const char lock_bands[] __unused =
+    "AT%XBANDLOCK=2,\"10000001000000001100\"";
 static const char normal[] = "AT+CFUN=1";
-static const char edrx_req[] = "AT+CEDRXS=1,4,\"1000\"";
+static const char edrx_req[] __unused = "AT+CEDRXS=1,4,\"1000\"";
+static const char cgact[] __unused = "AT+CGACT=1,1";
+static const char cgatt[] __unused = "AT+CGATT=1";
 static const char cgdcont[] __unused = "AT+CGDCONT?";
-static const char cgdcont_req[] = "AT+CGDCONT=0,\"IPv4v6\",\"internet.apn\"";
+static const char cgdcont_req[] __unused =
+    "AT+CGDCONT=1,\"IP\",\"ibasis.iot\"";
 static const char cgpaddr[] __unused = "AT+CGPADDR";
-static const char cesq[] = "AT+CESQ";
+static const char cesq[] __unused = "AT+CESQ";
+static const char cpsms[] __unused = "AT+CPSMS=";
+
+static const char nbiot[] __unused = "AT%XSYSTEMMODE=0,1,0,0";
+static const char catm1[] __unused = "AT%XSYSTEMMODE=1,0,0,0";
 
 char buffer[LC_MAX_READ_LENGTH];
 int buffer_fill;
@@ -130,12 +146,9 @@ bsd_irrecoverable_error_handler(uint32_t error)
 }
 
 static int
-at_cmd(int fd, const char *cmd, size_t size)
+at_send(int fd, const char *cmd, size_t size)
 {
-	uint8_t buffer[LC_MAX_READ_LENGTH];
 	int len;
-
-	printf("send: %s\n", cmd);
 
 	len = nrf_send(fd, cmd, size, 0);
 	if (len != size) {
@@ -143,13 +156,37 @@ at_cmd(int fd, const char *cmd, size_t size)
 		return (-1);
 	}
 
-	len = nrf_recv(fd, buffer, LC_MAX_READ_LENGTH, 0);
-	printf("recv: %s\n", buffer);
+	return (0);
+}
+
+static int
+at_recv(int fd, char *buf, int bufsize)
+{
+	int len;
+
+	len = nrf_recv(fd, buf, bufsize, 0);
+
+	return (len);
+}
+
+static int
+at_cmd(int fd, const char *cmd, size_t size)
+{
+	char buffer[LC_MAX_READ_LENGTH];
+	int len;
+
+	printf("send: %s\n", cmd);
+
+	if (at_send(fd, cmd, size) == 0) {
+		len = at_recv(fd, buffer, LC_MAX_READ_LENGTH);
+		if (len)
+			printf("recv: %s\n", buffer);
+	}
 
 	return (0);
 }
 
-static void
+static void __unused
 lte_at_client(void *arg)
 {
 	int fd;
@@ -174,8 +211,124 @@ lte_at_client(void *arg)
 	}
 }
 
+static void
+connect_to_server(void)
+{
+	struct nrf_addrinfo *server_addr;
+	struct nrf_sockaddr_in local_addr;
+	struct nrf_sockaddr_in *s;
+	uint8_t *ip;
+	int err;
+	int fd;
+
+	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, 0);
+	if (fd < 0)
+		panic("failed to create socket");
+
+	err = nrf_getaddrinfo(TCP_HOST, NULL, NULL, &server_addr);
+	if (err != 0)
+		panic("getaddrinfo failed with error %d\n", err);
+
+	s = (struct nrf_sockaddr_in *)server_addr->ai_addr;
+	ip = (uint8_t *)&(s->sin_addr.s_addr);
+	printf("Server IP address: %d.%d.%d.%d\n",
+	    ip[0], ip[1], ip[2], ip[3]);
+
+	s->sin_port = nrf_htons(TCP_PORT);
+	s->sin_len = sizeof(struct nrf_sockaddr_in);
+
+	bzero(&local_addr, sizeof(struct nrf_sockaddr_in));
+	local_addr.sin_family = NRF_AF_INET;
+	local_addr.sin_port = nrf_htons(0);
+	local_addr.sin_addr.s_addr = 0;
+	local_addr.sin_len = sizeof(struct nrf_sockaddr_in);
+
+	err = nrf_bind(fd, (struct nrf_sockaddr *)&local_addr,
+	    sizeof(local_addr));
+	if (err != 0)
+		panic("Bind failed: %d\n", err);
+
+	printf("Connecting to server...\n");
+	err = nrf_connect(fd, s,
+	    sizeof(struct nrf_sockaddr_in));
+	if (err != 0)
+		panic("TCP connect failed: err %d\n", err);
+
+	printf("Successfully connected to the server\n");
+
+	while (1)
+		raw_sleep(1000000);
+}
+
+static int __unused
+check_ipaddr(char *buf)
+{
+	char *t;
+	char *p;
+
+	t = (char *)buf;
+
+	printf("%s: %s\n", __func__, buf);
+
+	p = strsep(&t, ",");
+	if (p == NULL || strcmp(p, "+CGDCONT: 0") != 0)
+		return (0);
+
+	p = strsep(&t, ",");
+	if (p == NULL || strcmp(p, "\"IP\"") != 0)
+		return (0);
+
+	p = strsep(&t, ",");
+	if (p == NULL || strcmp(p, "\"\"") == 0)
+		return (0);
+
+	printf("APN: %s\n", p);
+
+	p = strsep(&t, ",");
+	if (p == NULL || strcmp(p, "\"\"") == 0)
+		return (0);
+
+	printf("IP: %s\n", p);
+
+	/* Success */
+
+	return (1);
+}
+
+static int
+lte_wait(int fd)
+{
+	char buf[LC_MAX_READ_LENGTH];
+	int len;
+	char *t;
+	char *p;
+
+	printf("Awaiting registration in the LTE-M network...\n");
+
+	while (1) {
+		len = at_recv(fd, buf, LC_MAX_READ_LENGTH);
+		if (len) {
+			printf("recv: %s\n", buf);
+			t = (char *)buf;
+			p = strsep(&t, ",");
+			if (p != NULL && strcmp(p, "+CEREG: 5") == 0)
+				break;
+		}
+
+		raw_sleep(1000000);
+	}
+
+	/* Extended signal quality */
+	at_send(fd, cesq, AT_CMD_SIZE(cesq));
+	len = at_recv(fd, buf, LC_MAX_READ_LENGTH);
+	if (len)
+		printf("recv: %s\n", buf);
+
+	return (0);
+}
+
 static void __unused
-lte_test(void)
+lte_connect(void)
 {
 	int fd;
 
@@ -183,24 +336,23 @@ lte_test(void)
 	if (fd < 0)
 		printf("failed to create socket\n");
 
+	at_cmd(fd, catm1, AT_CMD_SIZE(catm1));
+	at_cmd(fd, cpsms, AT_CMD_SIZE(cpsms));
 	at_cmd(fd, cind, AT_CMD_SIZE(cind));
 	at_cmd(fd, edrx_req, AT_CMD_SIZE(edrx_req));
-	at_cmd(fd, subscribe, AT_CMD_SIZE(subscribe));
 
 	/* Lock bands 3,4,13,20. */
 	at_cmd(fd, lock_bands, AT_CMD_SIZE(lock_bands));
 
-	/* Define PDP Context */
-	at_cmd(fd, cgdcont_req, AT_CMD_SIZE(cgdcont_req));
+	/* Subscribe for events. */
+	at_send(fd, subscribe, AT_CMD_SIZE(subscribe));
 
-	/* Normal mode. */
-	at_cmd(fd, normal, AT_CMD_SIZE(normal));
+	/* Switch to normal mode. */
+	at_send(fd, normal, AT_CMD_SIZE(normal));
 
-	while (1) {
-		/* Extended signal quality */
-		at_cmd(fd, cesq, AT_CMD_SIZE(cesq));
-
-		raw_sleep(1000000);
+	if (lte_wait(fd) == 0) {
+		printf("LTE connected\n");
+		connect_to_server();
 	}
 }
 
@@ -223,7 +375,7 @@ app_init(void)
 	console_register(uart_putchar, (void *)&uarte_sc);
 	uarte_register_callback(&uarte_sc, nrf_input, NULL);
 
-	printf("osfive initialized\n");
+	printf("mdepx initialized\n");
 
 	fl_init();
 	fl_add_region(0x20030000, 0x10000);
@@ -251,9 +403,9 @@ main(void)
 
 	buffer_fill = 0;
 	ready_to_send = 0;
-	lte_at_client(NULL);
+	lte_connect();
 
-	panic("lte_test returned!\n");
+	panic("lte_connect returned!\n");
 
 	return (0);
 }
