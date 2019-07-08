@@ -5,6 +5,7 @@ LDSCRIPT =	${CURDIR}/ldscript
 
 OBJDIR =	obj
 OSDIR =		mdepx
+
 OBJECTS =								\
 		bsd_os.o						\
 		main.o							\
