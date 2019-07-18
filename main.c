@@ -207,7 +207,7 @@ lte_at_client(void *arg)
 			if (len)
 				printf("%s\n", buffer);
 		}
-		raw_sleep(10000);
+		mdx_tsleep(10000);
 	}
 }
 
@@ -257,7 +257,7 @@ connect_to_server(void)
 	printf("Successfully connected to the server\n");
 
 	while (1)
-		raw_sleep(1000000);
+		mdx_tsleep(1000000);
 }
 
 static int __unused
@@ -315,7 +315,7 @@ lte_wait(int fd)
 				break;
 		}
 
-		raw_sleep(1000000);
+		mdx_tsleep(1000000);
 	}
 
 	/* Extended signal quality */
