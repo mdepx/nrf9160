@@ -24,7 +24,12 @@ LDADD =		\
 	${BSDLIB}/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a	\
 	${OBERON}/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
-KERNEL = malloc
+KERNEL =			\
+	arm			\
+	callout (tsleep)	\
+	malloc (fl fl_wrapper)	\
+	systm (console)
+
 LIBRARIES = libc libaeabi mbedtls_mdsha
 
 CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc			\
