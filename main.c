@@ -33,7 +33,7 @@
 
 #include <sys/mbuf.h>
 #include <net/if.h>
-#include <netinet/in.h>
+#include <net/netinet/in.h>
 #include <arpa/inet.h>
 
 #include <nrfxlib/bsdlib/include/nrf_socket.h>

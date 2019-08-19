@@ -9,11 +9,11 @@ OSDIR =		mdepx
 OBJECTS =								\
 		bsd_os.o						\
 		main.o							\
-		${OSDIR}/sys/arm/nordicsemi/nrf_uarte.o			\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_power.o		\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_spu.o		\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_timer.o		\
-		${OSDIR}/sys/arm/nordicsemi/nrf9160_uicr.o		\
+		${OSDIR}/kernel/arm/nordicsemi/nrf_uarte.o		\
+		${OSDIR}/kernel/arm/nordicsemi/nrf9160_power.o		\
+		${OSDIR}/kernel/arm/nordicsemi/nrf9160_spu.o		\
+		${OSDIR}/kernel/arm/nordicsemi/nrf9160_timer.o		\
+		${OSDIR}/kernel/arm/nordicsemi/nrf9160_uicr.o		\
 		start.o							\
 
 NRFXLIB ?=	${CURDIR}/nrfxlib/
@@ -24,10 +24,15 @@ LDADD =		\
 	${BSDLIB}/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a	\
 	${OBERON}/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
-KERNEL =			\
-	arm			\
-	callout (tsleep)	\
-	malloc (fl fl_wrapper)	\
+# KERNEL variable format:
+# directory (option option [cflag] option ...)	\
+# directory (option ...)
+#
+
+KERNEL =				\
+	arm				\
+	callout (tsleep)		\
+	malloc (fl fl_wrapper)		\
 	systm (console)
 
 LIBRARIES = libc libaeabi mbedtls_mdsha
