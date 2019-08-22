@@ -24,16 +24,25 @@ LDADD =		\
 	${BSDLIB}/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a	\
 	${OBERON}/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
-# KERNEL variable format:
-# directory (option option [cflag] option ...)	\
-# directory (option ...)
-#
+define KERNEL_CONFIG
+	module arm;
+	module callout;
+	module malloc;
+	module systm;
 
-KERNEL =				\
-	arm				\
-	callout (tsleep)		\
-	malloc (fl fl_wrapper)		\
-	systm (console)
+	callout {
+		include tsleep;
+	};
+
+	malloc {
+		include fl;
+		include fl_wrapper;
+	};
+
+	systm {
+		include console;
+	};
+endef
 
 LIBRARIES = libc libaeabi mbedtls_mdsha
 
