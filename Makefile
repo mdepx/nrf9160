@@ -32,15 +32,15 @@ kernel {
 	module systm;
 
 	callout {
-		include tsleep;
+		options tsleep;
 	};
 
 	malloc {
-		include fl fl_wrapper;
+		options fl fl_wrapper;
 	};
 
 	systm {
-		include console;
+		options console;
 	};
 };
 endef
