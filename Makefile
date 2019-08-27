@@ -24,29 +24,6 @@ LDADD =		\
 	${BSDLIB}/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a	\
 	${OBERON}/lib/cortex-m33/soft-float/liboberon_3.0.0.a
 
-define MDX_CONFIG
-kernel {
-	module arm;
-	module callout;
-	module malloc;
-	module systm;
-
-	callout {
-		options tsleep;
-	};
-
-	malloc {
-		options fl fl_wrapper;
-	};
-
-	systm {
-		options console;
-	};
-};
-endef
-
-LIBRARIES = libc libaeabi mbedtls_mdsha
-
 CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc			\
 	-fshort-enums -fno-builtin-printf -ffreestanding		\
 	-Wredundant-decls -Wnested-externs -Wstrict-prototypes		\
@@ -58,7 +35,4 @@ all:	${OBJDIR}/${APP}.elf
 clean:
 	@rm -f ${OBJECTS} ${OBJDIR}/${APP}.*
 
-include ${OSDIR}/lib/libaeabi/Makefile.inc
-include ${OSDIR}/lib/libc/Makefile.inc
-include ${OSDIR}/lib/mbedtls/Makefile.inc
 include ${OSDIR}/mk/default.mk
