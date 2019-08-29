@@ -4,6 +4,10 @@ kernel {
 	module malloc;
 	module systm;
 
+	arm {
+		options nrf9160;
+	};
+
 	callout {
 		options tsleep;
 	};

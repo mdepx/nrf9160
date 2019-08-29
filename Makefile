@@ -9,11 +9,6 @@ OSDIR =		mdepx
 OBJECTS =								\
 		bsd_os.o						\
 		main.o							\
-		${OSDIR}/kernel/arm/nordicsemi/nrf_uarte.o		\
-		${OSDIR}/kernel/arm/nordicsemi/nrf9160_power.o		\
-		${OSDIR}/kernel/arm/nordicsemi/nrf9160_spu.o		\
-		${OSDIR}/kernel/arm/nordicsemi/nrf9160_timer.o		\
-		${OSDIR}/kernel/arm/nordicsemi/nrf9160_uicr.o		\
 		start.o							\
 
 NRFXLIB ?=	${CURDIR}/nrfxlib/
