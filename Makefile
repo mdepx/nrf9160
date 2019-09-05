@@ -6,10 +6,7 @@ LDSCRIPT =	${CURDIR}/ldscript
 OBJDIR =	obj
 OSDIR =		mdepx
 
-OBJECTS =								\
-		bsd_os.o						\
-		main.o							\
-		start.o							\
+OBJECTS =
 
 NRFXLIB ?=	${CURDIR}/nrfxlib/
 BSDLIB =	${NRFXLIB}/bsdlib/
