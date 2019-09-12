@@ -1,30 +1,19 @@
-APP =		nrf9160
-MACHINE =	arm
+APP = nrf9160
 
-LDSCRIPT =	${CURDIR}/ldscript
+OSDIR = mdepx
 
-OBJDIR =	obj
-OSDIR =		mdepx
-
-OBJECTS =
-
-NRFXLIB ?=	${CURDIR}/nrfxlib/
-BSDLIB =	${NRFXLIB}/bsdlib/
-OBERON =	${NRFXLIB}/crypto/nrf_oberon/
-
-LDADD =		\
-	${BSDLIB}/lib/cortex-m33/soft-float/libbsd_nrf9160_xxaa.a	\
-	${OBERON}/lib/cortex-m33/soft-float/liboberon_3.0.0.a
-
-CFLAGS =-mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc			\
+export CFLAGS = -mthumb -mcpu=cortex-m4 -g -nostdlib -nostdinc		\
 	-fshort-enums -fno-builtin-printf -ffreestanding		\
 	-Wredundant-decls -Wnested-externs -Wstrict-prototypes		\
 	-Wmissing-prototypes -Wpointer-arith -Winline			\
 	-Wcast-qual -Wundef -Wmissing-include-dirs -Wall -Werror
 
-all:	${OBJDIR}/${APP}.elf
+CMD = python3 -B ${OSDIR}/tools/emitter.py
+
+all:
+	${CMD} mdepx.conf
 
 clean:
-	@rm -f ${OBJECTS} ${OBJDIR}/${APP}.*
+	@rm -rf obj/*
 
-include ${OSDIR}/mk/default.mk
+include ${OSDIR}/mk/user.mk
