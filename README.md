@@ -24,13 +24,21 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/machd
 ### Under Linux
     $ sudo apt install gcc-arm-linux-gnueabi
     $ export CROSS_COMPILE=arm-linux-gnueabi-
+
 ### Under FreeBSD
     $ sudo pkg install arm-none-eabi-gcc arm-none-eabi-binutils
     $ export CROSS_COMPILE=arm-none-eabi-
+
 ### Build
     $ git clone --recursive https://github.com/machdep/nrf9160
     $ cd nrf9160
     $ make
+
+## Program the chip using nrfjprog
+    $ nrfjprog -f NRF91 --erasepage 0x40000-0x90000
+    $ nrfjprog -f NRF91 --program obj/nrf9160.hex -r
+
+## Program the chip using OpenOCD
 
 ### Build openocd
     $ sudo apt install pkg-config autotools-dev automake libtool
@@ -40,7 +48,7 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/machd
     $ ./configure --enable-jlink
     $ make
 
-### Program the chip
+### Invoke openocd
     $ export OPENOCD_PATH=/path/to/openocd-nrf9160
     $ sudo ${OPENOCD_PATH}/src/openocd -s ${OPENOCD_PATH}/tcl \
       -f interface/jlink.cfg -c 'transport select swd; adapter_khz 1000' \
