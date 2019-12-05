@@ -136,15 +136,6 @@ bsd_recoverable_error_handler(uint32_t error)
 	printf("%s: error %d\n", __func__, error);
 }
 
-void
-bsd_irrecoverable_error_handler(uint32_t error)
-{
-
-	printf("%s: error %d\n", __func__, error);
-
-	while (1);
-}
-
 static int
 at_send(int fd, const char *cmd, size_t size)
 {
