@@ -28,7 +28,7 @@
 .syntax		unified
 .thumb
 
-.word	stack_top	/* Stack top address */
+.word	idle_thread_stack + MDX_THREAD_STACK_SIZE /* Stack top address */
 .word	__start		/* Reset */
 .word	exception	/* NMI */
 .word	exception	/* Hard Fault */
