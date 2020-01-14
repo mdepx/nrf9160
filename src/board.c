@@ -56,7 +56,6 @@ struct nrf_timer_softc timer0_sc;
 #define	UART_PIN_RX	28
 #define	UART_BAUDRATE	115200
 #define	NVIC_NINTRS	128
-#define	USEC_TO_TICKS(n)	(n)
 
 struct thread main_thread;
 uint8_t main_thread_stack[MDX_THREAD_STACK_SIZE] __aligned(16);

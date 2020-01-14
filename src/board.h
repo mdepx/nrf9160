@@ -27,6 +27,8 @@
 #ifndef _SRC_BOARD_H_
 #define	_SRC_BOARD_H_
 
+#define	USEC_TO_TICKS(n)	(n)
+
 void rpc_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void trace_proxy_intr(void *arg, struct trapframe *tf, int irq);
 void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
