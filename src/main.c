@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2018-2019 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2018-2020 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,32 +40,13 @@
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 
-#include <arm/arm/nvic.h>
-#include <arm/nordicsemi/nrf9160.h>
-
-struct arm_nvic_softc nvic_sc;
-
-struct nrf_uarte_softc uarte_sc;
-struct nrf_spu_softc spu_sc;
-struct nrf_power_softc power_sc;
-struct nrf_timer_softc timer0_sc;
-
-#define	UART_PIN_TX	29
-#define	UART_PIN_RX	28
-#define	UART_BAUDRATE	115200
-#define	NVIC_NINTRS	128
-#define	USEC_TO_TICKS(n)	(n)
+#include "board.h"
 
 #define	LC_MAX_READ_LENGTH	128
 #define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
 
 #define	TCP_HOST	"machdep.com"
 #define	TCP_PORT	80
-
-void rpc_proxy_intr(void *arg, struct trapframe *tf, int irq);
-void trace_proxy_intr(void *arg, struct trapframe *tf, int irq);
-void ipc_proxy_intr(void *arg, struct trapframe *tf, int irq);
-void IPC_IRQHandler(void);
 
 static const char cind[] __unused = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
@@ -85,20 +66,9 @@ static const char cpsms[] __unused = "AT+CPSMS=";
 static const char nbiot[] __unused = "AT%XSYSTEMMODE=0,1,0,0";
 static const char catm1[] __unused = "AT%XSYSTEMMODE=1,0,0,0";
 
-char buffer[LC_MAX_READ_LENGTH];
-int buffer_fill;
-int ready_to_send;
-
-struct thread main_thread;
-uint8_t main_thread_stack[MDX_THREAD_STACK_SIZE] __aligned(16);
-
-static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
-	[ID_UARTE0] = { nrf_uarte_intr, &uarte_sc },
-	[ID_TIMER0] = { nrf_timer_intr, &timer0_sc },
-	[ID_EGU1] = { rpc_proxy_intr, NULL },
-	[ID_EGU2] = { trace_proxy_intr, NULL },
-	[ID_IPC] = { ipc_proxy_intr, NULL },
-};
+static char buffer[LC_MAX_READ_LENGTH];
+static int buffer_fill;
+static int ready_to_send;
 
 void
 rpc_proxy_intr(void *arg, struct trapframe *tf, int irq)
@@ -119,19 +89,6 @@ ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
 {
 
 	IPC_IRQHandler();
-}
-
-static void
-uart_putchar(int c, void *arg)
-{
-	struct nrf_uarte_softc *sc;
- 
-	sc = arg;
- 
-	if (c == '\n')
-		nrf_uarte_putc(sc, '\r');
-
-	nrf_uarte_putc(sc, c);
 }
 
 void
@@ -323,7 +280,7 @@ lte_wait(int fd)
 	return (0);
 }
 
-static void __unused
+static void
 lte_connect(void)
 {
 	int fd;
@@ -352,7 +309,7 @@ lte_connect(void)
 	}
 }
 
-static void
+void
 nrf_input(int c, void *arg)
 {
 
@@ -360,40 +317,6 @@ nrf_input(int c, void *arg)
 		ready_to_send = 1;
 	else if (buffer_fill < LC_MAX_READ_LENGTH)
 		buffer[buffer_fill++] = c;
-}
-
-void
-board_init(void)
-{
-	struct thread *td;
-
-	nrf_uarte_init(&uarte_sc, BASE_UARTE0,
-	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
-	mdx_console_register(uart_putchar, (void *)&uarte_sc);
-	nrf_uarte_register_callback(&uarte_sc, nrf_input, NULL);
-
-	printf("mdepx initialized\n");
-
-	mdx_fl_init();
-	mdx_fl_add_region(0x20030000, 0x10000);
-
-	nrf_power_init(&power_sc, BASE_POWER);
-
-	arm_nvic_init(&nvic_sc, BASE_SCS);
-	arm_nvic_install_intr_map(&nvic_sc, intr_map);
-	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
-
-	nrf_timer_init(&timer0_sc, BASE_TIMER0);
-	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
-	arm_nvic_enable_intr(&nvic_sc, ID_UARTE0);
-
-	/* Create the main thread. */
-
-	td = &main_thread;
-	td->td_stack = (uint8_t *)main_thread_stack;
-	td->td_stack_size = MDX_THREAD_STACK_SIZE;
-	mdx_thread_setup(td, "main", 1, USEC_TO_TICKS(10000), main, NULL);
-	mdx_sched_add(td);
 }
 
 int
@@ -406,6 +329,7 @@ main(void)
 
 	buffer_fill = 0;
 	ready_to_send = 0;
+
 	lte_connect();
 
 	panic("lte_connect returned!\n");
