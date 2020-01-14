@@ -54,6 +54,7 @@ struct nrf_timer_softc timer0_sc;
 #define	UART_PIN_RX	28
 #define	UART_BAUDRATE	115200
 #define	NVIC_NINTRS	128
+#define	USEC_TO_TICKS(n)	(n)
 
 #define	LC_MAX_READ_LENGTH	128
 #define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
@@ -87,6 +88,9 @@ static const char catm1[] __unused = "AT%XSYSTEMMODE=1,0,0,0";
 char buffer[LC_MAX_READ_LENGTH];
 int buffer_fill;
 int ready_to_send;
+
+struct thread main_thread;
+uint8_t main_thread_stack[MDX_THREAD_STACK_SIZE] __aligned(16);
 
 static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
 	[ID_UARTE0] = { nrf_uarte_intr, &uarte_sc },
@@ -358,9 +362,10 @@ nrf_input(int c, void *arg)
 		buffer[buffer_fill++] = c;
 }
 
-int
-app_init(void)
+void
+board_init(void)
 {
+	struct thread *td;
 
 	nrf_uarte_init(&uarte_sc, BASE_UARTE0,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
@@ -382,7 +387,13 @@ app_init(void)
 	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
 	arm_nvic_enable_intr(&nvic_sc, ID_UARTE0);
 
-	return (0);
+	/* Create the main thread. */
+
+	td = &main_thread;
+	td->td_stack = (uint8_t *)main_thread_stack;
+	td->td_stack_size = MDX_THREAD_STACK_SIZE;
+	mdx_thread_setup(td, "main", 1, USEC_TO_TICKS(10000), main, NULL);
+	mdx_sched_add(td);
 }
 
 int
