@@ -36,6 +36,9 @@
 #include <net/netinet/in.h>
 #include <arpa/inet.h>
 
+#include <arm/arm/nvic.h>
+#include <arm/nordicsemi/nrf9160.h>
+
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
@@ -47,6 +50,8 @@
 
 #define	TCP_HOST	"machdep.com"
 #define	TCP_PORT	80
+
+extern struct arm_nvic_softc nvic_sc;
 
 static const char cind[] __unused = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
@@ -322,6 +327,10 @@ nrf_input(int c, void *arg)
 int
 main(void)
 {
+
+	arm_nvic_route_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr,   NULL);
+	arm_nvic_route_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
+	arm_nvic_route_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
 
 	bsd_init();
 

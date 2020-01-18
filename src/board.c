@@ -31,15 +31,6 @@
 #include <sys/malloc.h>
 #include <sys/thread.h>
 
-#include <sys/mbuf.h>
-#include <net/if.h>
-#include <net/netinet/in.h>
-#include <arpa/inet.h>
-
-#include <nrfxlib/bsdlib/include/nrf_socket.h>
-#include <nrfxlib/bsdlib/include/bsd.h>
-#include <nrfxlib/bsdlib/include/bsd_os.h>
-
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
@@ -47,15 +38,14 @@
 
 struct arm_nvic_softc nvic_sc;
 
-struct nrf_uarte_softc uarte_sc;
 struct nrf_spu_softc spu_sc;
+struct nrf_uarte_softc uarte_sc;
 struct nrf_power_softc power_sc;
 struct nrf_timer_softc timer0_sc;
 
 #define	UART_PIN_TX	29
 #define	UART_PIN_RX	28
 #define	UART_BAUDRATE	115200
-#define	NVIC_NINTRS	128
 
 static void
 uart_putchar(int c, void *arg)
@@ -87,11 +77,8 @@ board_init(void)
 
 	arm_nvic_init(&nvic_sc, BASE_SCS);
 
-	arm_nvic_route_intr(&nvic_sc, ID_UARTE0, nrf_uarte_intr,   &uarte_sc);
-	arm_nvic_route_intr(&nvic_sc, ID_TIMER0, nrf_timer_intr,   &timer0_sc);
-	arm_nvic_route_intr(&nvic_sc, ID_EGU1,   rpc_proxy_intr,   NULL);
-	arm_nvic_route_intr(&nvic_sc, ID_EGU2,   trace_proxy_intr, NULL);
-	arm_nvic_route_intr(&nvic_sc, ID_IPC,    ipc_proxy_intr,   NULL);
+	arm_nvic_route_intr(&nvic_sc, ID_UARTE0, nrf_uarte_intr, &uarte_sc);
+	arm_nvic_route_intr(&nvic_sc, ID_TIMER0, nrf_timer_intr, &timer0_sc);
 
 	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
 
