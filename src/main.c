@@ -43,8 +43,6 @@
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 
-#include "board.h"
-
 #define	LC_MAX_READ_LENGTH	128
 #define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
 
@@ -52,6 +50,7 @@
 #define	TCP_PORT	80
 
 extern struct arm_nvic_softc nvic_sc;
+extern struct nrf_uarte_softc uarte_sc;
 
 static const char cind[] __unused = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
@@ -75,21 +74,23 @@ static char buffer[LC_MAX_READ_LENGTH];
 static int buffer_fill;
 static int ready_to_send;
 
-void
+void IPC_IRQHandler(void);
+
+static void
 rpc_proxy_intr(void *arg, struct trapframe *tf, int irq)
 {
 
 	bsd_os_application_irq_handler();
 }
 
-void
+static void
 trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
 {
 
 	bsd_os_trace_irq_handler();
 }
 
-void
+static void
 ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
 {
 
@@ -314,7 +315,7 @@ lte_connect(void)
 	}
 }
 
-void
+static void
 nrf_input(int c, void *arg)
 {
 
@@ -331,6 +332,7 @@ main(void)
 	arm_nvic_route_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr,   NULL);
 	arm_nvic_route_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
 	arm_nvic_route_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
+	nrf_uarte_register_callback(&uarte_sc, nrf_input, NULL);
 
 	bsd_init();
 
