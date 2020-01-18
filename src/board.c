@@ -57,17 +57,6 @@ struct nrf_timer_softc timer0_sc;
 #define	UART_BAUDRATE	115200
 #define	NVIC_NINTRS	128
 
-struct thread main_thread;
-uint8_t main_thread_stack[MDX_THREAD_STACK_SIZE] __aligned(16);
-
-static const struct nvic_intr_entry intr_map[NVIC_NINTRS] = {
-	[ID_UARTE0] = { nrf_uarte_intr, &uarte_sc },
-	[ID_TIMER0] = { nrf_timer_intr, &timer0_sc },
-	[ID_EGU1] = { rpc_proxy_intr, NULL },
-	[ID_EGU2] = { trace_proxy_intr, NULL },
-	[ID_IPC] = { ipc_proxy_intr, NULL },
-};
-
 static void
 uart_putchar(int c, void *arg)
 {
@@ -84,33 +73,30 @@ uart_putchar(int c, void *arg)
 void
 board_init(void)
 {
-	struct thread *td;
 
 	nrf_uarte_init(&uarte_sc, BASE_UARTE0,
 	    UART_PIN_TX, UART_PIN_RX, UART_BAUDRATE);
 	mdx_console_register(uart_putchar, (void *)&uarte_sc);
 	nrf_uarte_register_callback(&uarte_sc, nrf_input, NULL);
 
-	printf("mdepx initialized\n");
-
 	mdx_fl_init();
 	mdx_fl_add_region(0x20030000, 0x10000);
 
 	nrf_power_init(&power_sc, BASE_POWER);
+	nrf_timer_init(&timer0_sc, BASE_TIMER0);
 
 	arm_nvic_init(&nvic_sc, BASE_SCS);
-	arm_nvic_install_intr_map(&nvic_sc, intr_map);
+
+	arm_nvic_route_intr(&nvic_sc, ID_UARTE0, nrf_uarte_intr,   &uarte_sc);
+	arm_nvic_route_intr(&nvic_sc, ID_TIMER0, nrf_timer_intr,   &timer0_sc);
+	arm_nvic_route_intr(&nvic_sc, ID_EGU1,   rpc_proxy_intr,   NULL);
+	arm_nvic_route_intr(&nvic_sc, ID_EGU2,   trace_proxy_intr, NULL);
+	arm_nvic_route_intr(&nvic_sc, ID_IPC,    ipc_proxy_intr,   NULL);
+
 	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
 
-	nrf_timer_init(&timer0_sc, BASE_TIMER0);
 	arm_nvic_enable_intr(&nvic_sc, ID_TIMER0);
 	arm_nvic_enable_intr(&nvic_sc, ID_UARTE0);
 
-	/* Create the main thread. */
-
-	td = &main_thread;
-	td->td_stack = (uint8_t *)main_thread_stack;
-	td->td_stack_size = MDX_THREAD_STACK_SIZE;
-	mdx_thread_setup(td, "main", 1, USEC_TO_TICKS(10000), main, NULL);
-	mdx_sched_add(td);
+	printf("mdepx initialized\n");
 }
