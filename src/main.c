@@ -329,9 +329,10 @@ int
 main(void)
 {
 
-	arm_nvic_route_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr,   NULL);
-	arm_nvic_route_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
-	arm_nvic_route_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
+	arm_nvic_setup_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr,   NULL);
+	arm_nvic_setup_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
+	arm_nvic_setup_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
+	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
 	nrf_uarte_register_callback(&uarte_sc, nrf_input, NULL);
 
 	bsd_init();
