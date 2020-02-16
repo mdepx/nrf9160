@@ -43,6 +43,8 @@
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 
+#include "gps.h"
+
 #define	LC_MAX_READ_LENGTH	128
 #define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
 
@@ -55,8 +57,12 @@ extern struct nrf_uarte_softc uarte_sc;
 static const char cind[] __unused = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
 static const char lock_bands[] __unused =
-    "AT%XBANDLOCK=2,\"10000001000000001100\"";
+    "AT\%XBANDLOCK=2,\"10000001000000001100\"";
 static const char normal[] = "AT+CFUN=1";
+static const char flight[] __unused = "AT+CFUN=4";
+static const char gps_enable[] __unused = "AT+CFUN=31";
+static const char lte_enable[] __unused = "AT+CFUN=21";
+static const char lte_disable[] __unused = "AT+CFUN=20";
 static const char edrx_req[] __unused = "AT+CEDRXS=1,4,\"1000\"";
 static const char cgact[] __unused = "AT+CGACT=1,1";
 static const char cgatt[] __unused = "AT+CGATT=1";
@@ -67,8 +73,21 @@ static const char cgpaddr[] __unused = "AT+CGPADDR";
 static const char cesq[] __unused = "AT+CESQ";
 static const char cpsms[] __unused = "AT+CPSMS=";
 
-static const char nbiot[] __unused = "AT%XSYSTEMMODE=0,1,0,0";
-static const char catm1[] __unused = "AT%XSYSTEMMODE=1,0,0,0";
+static const char psm_req[] = "AT+CPSMS=1,,,\"00000110\",\"00000000\"";
+/* Request eDRX to be disabled */
+static const char edrx_disable[] = "AT+CEDRXS=3";
+
+static const char magpio[] __unused = "AT\%XMAGPIO=1,0,0,1,1,1574,1577";
+static const char coex0[] __unused = "AT\%XCOEX0=1,1,1570,1580";
+
+
+/*
+ * %XSYSTEMMODE=<M1_support>,<NB1_support>,<GNSS_support>,<LTE_preference>
+ */
+
+static const char systm_mode[] __unused = "AT%XSYSTEMMODE?";
+static const char nbiot_gps[] __unused = "AT%XSYSTEMMODE=0,1,1,0";
+static const char catm1_gps[] __unused = "AT%XSYSTEMMODE=1,0,1,0";
 
 static char buffer[LC_MAX_READ_LENGTH];
 static int buffer_fill;
@@ -214,9 +233,6 @@ connect_to_server(void)
 		panic("TCP connect failed: err %d\n", err);
 
 	printf("Successfully connected to the server\n");
-
-	while (1)
-		mdx_tsleep(1000000);
 }
 
 static int __unused
@@ -286,17 +302,35 @@ lte_wait(int fd)
 	return (0);
 }
 
-static void
+static int
 lte_connect(void)
 {
 	int fd;
 
 	fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
-	if (fd < 0)
+	if (fd < 0) {
 		printf("failed to create socket\n");
+		return (-1);
+	}
 
-	at_cmd(fd, catm1, AT_CMD_SIZE(catm1));
-	at_cmd(fd, cpsms, AT_CMD_SIZE(cpsms));
+	printf("AT lte socket %d\n", fd);
+
+	/* Switch to the flight mode. */
+	at_cmd(fd, flight, AT_CMD_SIZE(flight));
+
+	/* Read current system mode. */
+	at_cmd(fd, systm_mode, AT_CMD_SIZE(systm_mode));
+
+	/* Set new system mode */
+	at_cmd(fd, catm1_gps, AT_CMD_SIZE(catm1_gps));
+
+	/* GPS: nrf9160-DK only. */
+	at_cmd(fd, magpio, AT_CMD_SIZE(magpio));
+	at_cmd(fd, coex0, AT_CMD_SIZE(coex0));
+
+	/* Switch to power saving mode as required for GPS to operate. */
+	at_cmd(fd, psm_req, AT_CMD_SIZE(psm_req));
+
 	at_cmd(fd, cind, AT_CMD_SIZE(cind));
 	at_cmd(fd, edrx_req, AT_CMD_SIZE(edrx_req));
 
@@ -307,12 +341,30 @@ lte_connect(void)
 	at_send(fd, subscribe, AT_CMD_SIZE(subscribe));
 
 	/* Switch to normal mode. */
-	at_send(fd, normal, AT_CMD_SIZE(normal));
+	at_cmd(fd, normal, AT_CMD_SIZE(normal));
 
 	if (lte_wait(fd) == 0) {
 		printf("LTE connected\n");
 		connect_to_server();
 	}
+
+	mdx_usleep(500000);
+
+	/* Switch to GPS mode. */
+	at_cmd(fd, lte_disable, AT_CMD_SIZE(lte_disable));
+
+	mdx_usleep(500000);
+
+	at_cmd(fd, edrx_disable, AT_CMD_SIZE(edrx_disable));
+
+	mdx_usleep(500000);
+
+	/* Switch to GPS mode. */
+	at_cmd(fd, gps_enable, AT_CMD_SIZE(gps_enable));
+
+	mdx_usleep(500000);
+
+	return (0);
 }
 
 static void
@@ -328,6 +380,7 @@ nrf_input(int c, void *arg)
 int
 main(void)
 {
+	int error;
 
 	arm_nvic_setup_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr,   NULL);
 	arm_nvic_setup_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
@@ -344,7 +397,16 @@ main(void)
 
 	lte_connect();
 
-	panic("lte_connect returned!\n");
+	error = gps_init();
+	if (error)
+		printf("Can't initialize GPS\n");
+	else {
+		printf("GPS initialized\n");
+		gps_test();
+	}
+
+	while (1)
+		mdx_tsleep(1000000);
 
 	return (0);
 }
