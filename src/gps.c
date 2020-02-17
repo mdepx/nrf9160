@@ -80,12 +80,11 @@ test_thr(void *arg)
 	int i;
 
 	double d;
+	d = 0.125;
+	ftoa(d, buf, 10);
+	printf("d is: %s\n", buf);
 
 	while (1) {
-		d = 0.125;
-		ftoa(d, buf, 10);
-		printf("d is: %s\n", buf);
-
 		b = 0;
 		a = 0.1;
 		for (i = 0; i < 1000000; i++)
