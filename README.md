@@ -57,4 +57,4 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/machd
       -f target/nrf9160.cfg -c "program nrf9160.elf 0 reset verify exit"
 
 ![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/nrf9160-dk.jpg)
-![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/nrf9160.jpg)
+![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/md009.jpg)
