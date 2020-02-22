@@ -1,8 +1,8 @@
 # nRF9160
 
-Nordicsemi nRF9160 is an ARM Cortex-M33 SiP (system in package) with LTE modem.
+Nordicsemi nRF9160 is an ARM Cortex-M33 SiP (system in package) with support for LTE-M, NB-IoT and GPS.
 
-Note: The latest modem firmware (version 1.1.1) is required.
+Note: The latest firmware (version 1.1.1) is required.
 
 For nRF9160-DK connect micro usb cable to J4, for other boards connect UART pins as follows:
 
@@ -57,4 +57,4 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/machd
       -f target/nrf9160.cfg -c "program nrf9160.elf 0 reset verify exit"
 
 ![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/nrf9160-dk.jpg)
-![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/nrf9160.jpg)
+![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/md009.jpg)
