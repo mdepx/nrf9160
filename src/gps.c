@@ -48,6 +48,16 @@
 
 static int socket;
 
+/* GNSS delete mask */
+#define	GNSS_DEL_EPHEMERIDES		(1 << 0)
+#define	GNSS_DEL_ALMANAC		(1 << 1)
+#define	GNSS_DEL_IONOSPHERIC		(1 << 2)
+#define	GNSS_DEL_LGF			(1 << 3) /* Last good fix */
+#define	GNSS_DEL_GPS_TOW		(1 << 4) /* Time of week */
+#define	GNSS_DEL_GPS_WN			(1 << 5) /* Week number */
+#define	GNSS_DEL_LEAP_SECOND		(1 << 6)
+#define	GNSS_DEL_LOCAL_CLOCK_FOD	(1 << 7) /* Frequency offset data */
+
 static void
 print_stats(nrf_gnss_pvt_data_frame_t *pvt)
 {
