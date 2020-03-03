@@ -39,12 +39,13 @@
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
+#include <ftoa/ftoa.h>
+
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 
 #include "gps.h"
-#include "ftoa.h"
 
 static int socket;
 
