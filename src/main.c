@@ -164,6 +164,40 @@ at_cmd(int fd, const char *cmd, size_t size)
 	return (0);
 }
 
+static void
+lte_signal(int fd)
+{
+	char buf[LC_MAX_READ_LENGTH];
+	float rsrq;
+	int rsrp;
+	int len;
+	char *t, *p;
+
+	/* Extended signal quality */
+	at_send(fd, cesq, AT_CMD_SIZE(cesq));
+	len = at_recv(fd, buf, LC_MAX_READ_LENGTH);
+	if (len) {
+		printf("recv: %s\n", buf);
+
+		t = (char *)buf;
+
+		p = strsep(&t, ",");	/* +CESQ: rxlev */
+		p = strsep(&t, ",");	/* ber */
+		p = strsep(&t, ",");	/* rscp */
+		p = strsep(&t, ",");	/* echo */
+		p = strsep(&t, ",");	/* rsrq */
+
+		rsrq = 20 - atoi(p) / 2;
+
+		p = strsep(&t, ",");
+
+		rsrp = 140 - atoi(p) + 1;
+
+		printf("LTE signal quality: rsrq -%.2f dB rsrp -%d dBm\n",
+		    rsrq, rsrp);
+	}
+}
+
 static void __unused
 lte_at_client(void *arg)
 {
@@ -293,11 +327,7 @@ lte_wait(int fd)
 		mdx_tsleep(1000000);
 	}
 
-	/* Extended signal quality */
-	at_send(fd, cesq, AT_CMD_SIZE(cesq));
-	len = at_recv(fd, buf, LC_MAX_READ_LENGTH);
-	if (len)
-		printf("recv: %s\n", buf);
+	lte_signal(fd);
 
 	return (0);
 }
