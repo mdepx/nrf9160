@@ -219,7 +219,7 @@ lte_at_client(void *arg)
 			if (len)
 				printf("%s\n", buffer);
 		}
-		mdx_tsleep(10000);
+		mdx_usleep(10000);
 	}
 }
 
@@ -335,7 +335,7 @@ lte_wait(int fd)
 			}
 		}
 
-		mdx_tsleep(1000000);
+		mdx_usleep(1000000);
 	}
 
 	lte_signal(fd);
@@ -447,7 +447,7 @@ main(void)
 	}
 
 	while (1)
-		mdx_tsleep(1000000);
+		mdx_usleep(1000000);
 
 	return (0);
 }
