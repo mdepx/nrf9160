@@ -320,8 +320,19 @@ lte_wait(int fd)
 			printf("recv: %s\n", buf);
 			t = (char *)buf;
 			p = strsep(&t, ",");
-			if (p != NULL && strcmp(p, "+CEREG: 5") == 0)
-				break;
+			if (p != NULL) {
+				/* Check network registration status. */
+
+				if (strcmp(p, "+CEREG: 5") == 0) {
+					printf("Registered, roaming.\n");
+					break;
+				}
+
+				if (strcmp(p, "+CEREG: 1") == 0) {
+					printf("Registered, home network.\n");
+					break;
+				}
+			}
 		}
 
 		mdx_tsleep(1000000);
