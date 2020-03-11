@@ -323,6 +323,11 @@ lte_wait(int fd)
 			if (p != NULL) {
 				/* Check network registration status. */
 
+				if (strcmp(p, "+CEREG: 3") == 0) {
+					printf("Registration denied\n");
+					return (-1);
+				}
+
 				if (strcmp(p, "+CEREG: 5") == 0) {
 					printf("Registered, roaming.\n");
 					break;
@@ -387,7 +392,8 @@ lte_connect(void)
 	if (lte_wait(fd) == 0) {
 		printf("LTE connected\n");
 		connect_to_server();
-	}
+	} else
+		printf("Failed to connect to LTE\n");
 
 	mdx_usleep(500000);
 
