@@ -204,7 +204,7 @@ lte_at_client(void *arg)
 	int fd;
 	int len;
 
-	fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
+	fd = nrf_socket(NRF_AF_LTE, NRF_SOCK_DGRAM, NRF_PROTO_AT);
 	if (fd < 0)
 		printf("failed to create socket\n");
 
@@ -233,7 +233,7 @@ connect_to_server(void)
 	int err;
 	int fd;
 
-	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, 0);
+	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
 	if (fd < 0)
 		panic("failed to create socket");
 
@@ -353,7 +353,7 @@ lte_connect(void)
 {
 	int fd;
 
-	fd = nrf_socket(NRF_AF_LTE, 0, NRF_PROTO_AT);
+	fd = nrf_socket(NRF_AF_LTE, NRF_SOCK_DGRAM, NRF_PROTO_AT);
 	if (fd < 0) {
 		printf("failed to create socket\n");
 		return (-1);
