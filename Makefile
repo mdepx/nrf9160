@@ -5,7 +5,7 @@ OSDIR = mdepx
 CMD = python3 -B ${OSDIR}/tools/emitter.py
 
 all:
-	@${CMD} mdepx.conf
+	@${CMD} -j mdepx.conf
 	@${CROSS_COMPILE}objcopy -O ihex obj/${APP}.elf obj/${APP}.hex
 
 debug:
