@@ -2,7 +2,7 @@
 
 Nordicsemi nRF9160 is an ARM Cortex-M33 SiP (system in package) with support for LTE-M, NB-IoT and GPS.
 
-Note: The latest firmware (version 1.1.1) is required.
+Note: The latest firmware (version 1.2.0) is required.
 
 For nRF9160-DK connect micro usb cable to J4, for other boards connect UART pins as follows:
 
