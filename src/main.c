@@ -93,36 +93,6 @@ static char buffer[LC_MAX_READ_LENGTH];
 static int buffer_fill;
 static int ready_to_send;
 
-void IPC_IRQHandler(void);
-
-static void
-rpc_proxy_intr(void *arg, struct trapframe *tf, int irq)
-{
-
-	bsd_os_application_irq_handler();
-}
-
-static void
-trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
-{
-
-	bsd_os_trace_irq_handler();
-}
-
-static void
-ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
-{
-
-	IPC_IRQHandler();
-}
-
-void
-bsd_recoverable_error_handler(uint32_t error)
-{
-
-	printf("%s: error %d\n", __func__, error);
-}
-
 static int
 at_send(int fd, const char *cmd, size_t size)
 {
@@ -429,10 +399,6 @@ main(void)
 {
 	int error;
 
-	arm_nvic_setup_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr,   NULL);
-	arm_nvic_setup_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
-	arm_nvic_setup_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
-	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
 	nrf_uarte_register_callback(&uarte_sc, nrf_input, NULL);
 
 	bsd_init();

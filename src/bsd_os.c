@@ -25,11 +25,14 @@
  */
 
 #include <sys/cdefs.h>
+#include <sys/mutex.h>
 
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
 #include <nrfxlib/bsdlib/include/bsd_os.h>
+#include <nrfxlib/bsdlib/include/bsd.h>
+#include <nrfxlib/ble_controller/include/nrf_errno.h>
 
 #define	BSD_OS_DEBUG
 #undef	BSD_OS_DEBUG
@@ -42,24 +45,142 @@
 
 extern struct arm_nvic_softc nvic_sc;
 
+void IPC_IRQHandler(void);
+
+struct sleeping_thread {
+	struct entry node;
+	mdx_sem_t sem;
+};
+
+static struct mdx_mutex bsdos_mtx;
+static struct entry sleeping_thread_list;
+
+static struct sleeping_thread *
+td_first(void)
+{
+	struct sleeping_thread *td;
+
+	if (list_empty(&sleeping_thread_list))
+		return (NULL);
+
+	td = CONTAINER_OF(sleeping_thread_list.next,
+	    struct sleeping_thread, node);
+
+	return (td);
+}
+
+static struct sleeping_thread *
+td_next(struct sleeping_thread *td0)
+{
+	struct sleeping_thread *td;
+
+	if (td0->node.next == &sleeping_thread_list)
+		return (NULL);
+
+	td = CONTAINER_OF(td0->node.next, struct sleeping_thread, node);
+
+	return (td);
+}
+
+static void
+ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
+{
+
+	IPC_IRQHandler();
+}
+
+void
+bsd_recoverable_error_handler(uint32_t error)
+{
+
+	printf("%s: error %d\n", __func__, error);
+}
+
+static void
+trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
+{
+
+	bsd_os_trace_irq_handler();
+}
+
+static void
+rpc_proxy_intr(void *arg, struct trapframe *tf, int irq)
+{
+	struct sleeping_thread *td;
+
+	dprintf(",");
+
+	bsd_os_application_irq_handler();
+
+	for (td = td_first(); td != NULL; td = td_next(td))
+		mdx_sem_post(&td->sem);
+}
+
 void
 bsd_os_init(void)
 {
 
 	dprintf("%s\n", __func__);
 
+	mdx_mutex_init(&bsdos_mtx);
+	list_init(&sleeping_thread_list);
+
+	arm_nvic_setup_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr, NULL);
 	arm_nvic_set_prio(&nvic_sc, ID_EGU1, 6);
 	arm_nvic_enable_intr(&nvic_sc, ID_EGU1);
 
+	arm_nvic_setup_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
 	arm_nvic_set_prio(&nvic_sc, ID_EGU2, 6);
 	arm_nvic_enable_intr(&nvic_sc, ID_EGU2);
+
+	arm_nvic_setup_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
+	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
 }
 
 int32_t
 bsd_os_timedwait(uint32_t context, int32_t * p_timeout)
 {
+	struct sleeping_thread td;
+	int val;
+	int err;
+	int tmout;
 
-	dprintf("%s: %p\n", __func__, p_timeout);
+	val = *p_timeout;
+	if (val == 0) {
+		mdx_thread_yield();
+		return (NRF_ETIMEDOUT);
+	}
+
+	/*
+	 * Note that rpc_proxy interrupt could fire right here.
+	 * To handle that situation don't wait forever,
+	 * just set some reasonable timeout.
+	 */
+	if (val < 0)
+		tmout = 10000000; /* 10 sec. */
+	else if (val > 0)
+		tmout = val * 1000;
+
+	mdx_sem_init(&td.sem, 0);
+
+	critical_enter();
+	list_append(&sleeping_thread_list, &td.node);
+	critical_exit();
+
+	dprintf("%s: %d\n", __func__, tmout);
+
+	err = mdx_sem_timedwait(&td.sem, tmout);
+
+	critical_enter();
+	list_remove(&td.node);
+	critical_exit();
+
+	if (err == 0) {
+		dprintf("%s: timeout\n", __func__);
+		if (val == -1)
+			return (0);
+		return (NRF_ETIMEDOUT);
+	}
 
 	return (0);
 }
@@ -68,7 +189,7 @@ void
 bsd_os_errno_set(int errno_val)
 {
 
-	dprintf("%s\n", __func__);
+	dprintf("%s: %d\n", __func__, errno_val);
 }
 
 void
