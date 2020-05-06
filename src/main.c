@@ -36,7 +36,6 @@
 #include <net/netinet/in.h>
 #include <arpa/inet.h>
 
-#include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
@@ -51,7 +50,6 @@
 #define	TCP_HOST	"machdep.com"
 #define	TCP_PORT	80
 
-extern struct arm_nvic_softc nvic_sc;
 extern struct nrf_uarte_softc uarte_sc;
 
 static const char cind[] __unused = "AT+CIND?";
