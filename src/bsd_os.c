@@ -30,6 +30,8 @@
 #include <arm/arm/nvic.h>
 #include <arm/nordicsemi/nrf9160.h>
 
+#include <dev/intc/intc.h>
+
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/ble_controller/include/nrf_errno.h>
@@ -43,7 +45,7 @@
 #define	dprintf(fmt, ...)
 #endif
 
-extern struct arm_nvic_softc nvic_sc;
+extern struct mdx_device dev_nvic;
 
 void IPC_IRQHandler(void);
 
@@ -83,7 +85,7 @@ td_next(struct sleeping_thread *td0)
 }
 
 static void
-ipc_proxy_intr(void *arg, struct trapframe *tf, int irq)
+ipc_proxy_intr(void *arg, int irq)
 {
 
 	IPC_IRQHandler();
@@ -97,14 +99,14 @@ bsd_recoverable_error_handler(uint32_t error)
 }
 
 static void
-trace_proxy_intr(void *arg, struct trapframe *tf, int irq)
+trace_proxy_intr(void *arg, int irq)
 {
 
 	bsd_os_trace_irq_handler();
 }
 
 static void
-rpc_proxy_intr(void *arg, struct trapframe *tf, int irq)
+rpc_proxy_intr(void *arg, int irq)
 {
 	struct sleeping_thread *td;
 
@@ -125,16 +127,16 @@ bsd_os_init(void)
 	mdx_mutex_init(&bsdos_mtx);
 	list_init(&sleeping_thread_list);
 
-	arm_nvic_setup_intr(&nvic_sc, ID_EGU1, rpc_proxy_intr, NULL);
-	arm_nvic_set_prio(&nvic_sc, ID_EGU1, 6);
-	arm_nvic_enable_intr(&nvic_sc, ID_EGU1);
+	mdx_intc_setup(&dev_nvic, ID_EGU1, rpc_proxy_intr, NULL);
+	mdx_intc_set_prio(&dev_nvic, ID_EGU1, 6);
+	mdx_intc_enable(&dev_nvic, ID_EGU1);
 
-	arm_nvic_setup_intr(&nvic_sc, ID_EGU2, trace_proxy_intr, NULL);
-	arm_nvic_set_prio(&nvic_sc, ID_EGU2, 6);
-	arm_nvic_enable_intr(&nvic_sc, ID_EGU2);
+	mdx_intc_setup(&dev_nvic, ID_EGU2, trace_proxy_intr, NULL);
+	mdx_intc_set_prio(&dev_nvic, ID_EGU2, 6);
+	mdx_intc_enable(&dev_nvic, ID_EGU2);
 
-	arm_nvic_setup_intr(&nvic_sc, ID_IPC,  ipc_proxy_intr,   NULL);
-	arm_nvic_set_prio(&nvic_sc, ID_IPC, 6);
+	mdx_intc_setup(&dev_nvic, ID_IPC,  ipc_proxy_intr, NULL);
+	mdx_intc_set_prio(&dev_nvic, ID_IPC, 6);
 }
 
 int32_t
@@ -197,7 +199,7 @@ bsd_os_application_irq_clear(void)
 {
 
 	dprintf("%s\n", __func__);
-	arm_nvic_clear_pending(&nvic_sc, ID_EGU1);
+	mdx_intc_clear(&dev_nvic, ID_EGU1);
 }
 
 void
@@ -205,7 +207,7 @@ bsd_os_application_irq_set(void)
 {
 
 	dprintf("%s\n", __func__);
-	arm_nvic_set_pending(&nvic_sc, ID_EGU1);
+	mdx_intc_set(&dev_nvic, ID_EGU1);
 }
 
 void
@@ -213,7 +215,7 @@ bsd_os_trace_irq_set(void)
 {
 
 	dprintf("%s\n", __func__);
-	arm_nvic_set_pending(&nvic_sc, ID_EGU2);
+	mdx_intc_set(&dev_nvic, ID_EGU2);
 }
 
 void
@@ -221,7 +223,7 @@ bsd_os_trace_irq_clear(void)
 {
 
 	dprintf("%s\n", __func__);
-	arm_nvic_clear_pending(&nvic_sc, ID_EGU2);
+	mdx_intc_clear(&dev_nvic, ID_EGU2);
 }
 
 int32_t

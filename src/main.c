@@ -78,6 +78,7 @@ static const char edrx_disable[] = "AT+CEDRXS=3";
 static const char magpio[] __unused = "AT\%XMAGPIO=1,0,0,1,1,1574,1577";
 static const char coex0[] __unused = "AT\%XCOEX0=1,1,1570,1580";
 
+extern struct mdx_device dev_uart;
 
 /*
  * %XSYSTEMMODE=<M1_support>,<NB1_support>,<GNSS_support>,<LTE_preference>
@@ -397,7 +398,7 @@ main(void)
 {
 	int error;
 
-	nrf_uarte_register_callback(&uarte_sc, nrf_input, NULL);
+	nrf_uarte_register_callback(&dev_uart, nrf_input, NULL);
 
 	bsd_init();
 
