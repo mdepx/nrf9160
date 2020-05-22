@@ -396,11 +396,15 @@ nrf_input(int c, void *arg)
 int
 main(void)
 {
+	bsd_init_params_t p_init_params;
 	int error;
 
 	nrf_uarte_register_callback(&dev_uart, nrf_input, NULL);
 
-	bsd_init();
+	p_init_params.trace_on = 0;
+	p_init_params.bsd_memory_address = 0x20010000;
+	p_init_params.bsd_memory_size = 64 * 1024;
+	bsd_init(&p_init_params);
 
 	printf("bsd library initialized\n");
 
