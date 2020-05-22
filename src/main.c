@@ -41,6 +41,7 @@
 #include <nrfxlib/bsdlib/include/nrf_socket.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
 #include <nrfxlib/bsdlib/include/bsd_os.h>
+#include <nrfxlib/bsdlib/include/bsd_platform.h>
 
 #include "gps.h"
 
@@ -396,15 +397,15 @@ nrf_input(int c, void *arg)
 int
 main(void)
 {
-	bsd_init_params_t p_init_params;
+	bsd_init_params_t init_params;
 	int error;
 
 	nrf_uarte_register_callback(&dev_uart, nrf_input, NULL);
 
-	p_init_params.trace_on = 0;
-	p_init_params.bsd_memory_address = 0x20010000;
-	p_init_params.bsd_memory_size = 64 * 1024;
-	bsd_init(&p_init_params);
+	init_params.trace_on = true;
+	init_params.bsd_memory_address = BSD_RESERVED_MEMORY_ADDRESS;
+	init_params.bsd_memory_size = BSD_RESERVED_MEMORY_SIZE;
+	bsd_init(&init_params);
 
 	printf("bsd library initialized\n");
 
