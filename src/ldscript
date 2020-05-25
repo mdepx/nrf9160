@@ -1,6 +1,9 @@
 MEMORY
 {
-	flash   (rx)  : ORIGIN = 0x00040000, LENGTH = 1M
+	/*
+	 * top 0x4000 bytes is reserved for the DTB
+	 */
+	flash   (rx)  : ORIGIN = 0x00040000, LENGTH = 1M - 0x40000 - 0x4000
 	sram0   (rwx) : ORIGIN = 0x20000000, LENGTH = 16K /* boot loader */
 	sram1   (rwx) : ORIGIN = 0x20010000, LENGTH = 64K /* bsdlib */
 	sram2   (rwx) : ORIGIN = 0x20020000, LENGTH = 64K /* this app */
@@ -18,6 +21,12 @@ SECTIONS
 	.text : {
 		*(.exception);
 		*(.text*);
+	} > flash
+
+	.sysinit : {
+		__sysinit_start = ABSOLUTE(.);
+		*(.sysinit)
+		__sysinit_end = ABSOLUTE(.);
 	} > flash
 
 	.rodata : {
