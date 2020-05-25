@@ -45,8 +45,6 @@
 #define	dprintf(fmt, ...)
 #endif
 
-#include "board.h"
-
 void IPC_IRQHandler(void);
 
 struct sleeping_thread {
