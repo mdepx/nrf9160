@@ -29,9 +29,12 @@
 #include <sys/thread.h>
 #include <sys/malloc.h>
 
+#include <arm/nordicsemi/nrf9160.h>
+
 void
 board_init(void)
 {
+	mdx_device_t dev;
 
 	/* Add some memory so OF could allocate devices and their softc. */
 	mdx_fl_init();
@@ -39,6 +42,12 @@ board_init(void)
 
 	mdx_of_install_dtbp((void *)0xf8000);
 	mdx_of_probe_devices();
+
+	/* Enable the instruction cache. */
+	dev = mdx_device_lookup_by_name("nrf_nvmc", 0);
+	if (!dev)
+		panic("nvmc dev not found");
+	nrf_nvmc_icache_control(dev, true);
 
 	printf("mdepx initialized\n");
 }
