@@ -34,7 +34,7 @@
 
 #include <nrfxlib/bsdlib/include/bsd_os.h>
 #include <nrfxlib/bsdlib/include/bsd.h>
-#include <nrfxlib/ble_controller/include/nrf_errno.h>
+#include <nrfxlib/bsdlib/include/nrf_errno.h>
 
 #define	BSD_OS_DEBUG
 #undef	BSD_OS_DEBUG
