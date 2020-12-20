@@ -36,10 +36,10 @@
 #include <nrfxlib/nrf_modem/include/nrf_modem.h>
 #include <nrfxlib/nrf_modem/include/nrf_errno.h>
 
-#define	BSD_OS_DEBUG
-#undef	BSD_OS_DEBUG
+#define	NRF_MODEM_DEBUG
+#undef	NRF_MODEM_DEBUG
 
-#ifdef	BSD_OS_DEBUG
+#ifdef	NRF_MODEM_DEBUG
 #define	dprintf(fmt, ...)	printf(fmt, ##__VA_ARGS__)
 #else
 #define	dprintf(fmt, ...)
