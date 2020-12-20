@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2019 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2019-2020 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@
 
 #include <dev/intc/intc.h>
 
-#include <nrfxlib/bsdlib/include/bsd_os.h>
-#include <nrfxlib/bsdlib/include/bsd.h>
-#include <nrfxlib/bsdlib/include/nrf_errno.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem.h>
+#include <nrfxlib/nrf_modem/include/nrf_errno.h>
 
 #define	BSD_OS_DEBUG
 #undef	BSD_OS_DEBUG
@@ -44,8 +44,6 @@
 #else
 #define	dprintf(fmt, ...)
 #endif
-
-void IPC_IRQHandler(void);
 
 struct sleeping_thread {
 	struct entry node;
@@ -83,15 +81,8 @@ td_next(struct sleeping_thread *td0)
 	return (td);
 }
 
-static void
-ipc_proxy_intr(void *arg, int irq)
-{
-
-	IPC_IRQHandler();
-}
-
 void
-bsd_recoverable_error_handler(uint32_t error)
+nrf_modem_recoverable_error_handler(uint32_t error)
 {
 
 	printf("%s: error %d\n", __func__, error);
@@ -101,7 +92,7 @@ static void
 trace_proxy_intr(void *arg, int irq)
 {
 
-	bsd_os_trace_irq_handler();
+	nrf_modem_os_trace_irq_handler();
 }
 
 static void
@@ -111,14 +102,14 @@ rpc_proxy_intr(void *arg, int irq)
 
 	dprintf(",");
 
-	bsd_os_application_irq_handler();
+	nrf_modem_os_application_irq_handler();
 
 	for (td = td_first(); td != NULL; td = td_next(td))
 		mdx_sem_post(&td->sem);
 }
 
 void
-bsd_os_init(void)
+nrf_modem_os_init(void)
 {
 
 	dprintf("%s\n", __func__);
@@ -137,13 +128,10 @@ bsd_os_init(void)
 	mdx_intc_setup(nvic, ID_EGU2, trace_proxy_intr, NULL);
 	mdx_intc_set_prio(nvic, ID_EGU2, 6);
 	mdx_intc_enable(nvic, ID_EGU2);
-
-	mdx_intc_setup(nvic, ID_IPC,  ipc_proxy_intr, NULL);
-	mdx_intc_set_prio(nvic, ID_IPC, 6);
 }
 
 int32_t
-bsd_os_timedwait(uint32_t context, int32_t * p_timeout)
+nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 {
 	struct sleeping_thread td;
 	int val;
@@ -191,14 +179,14 @@ bsd_os_timedwait(uint32_t context, int32_t * p_timeout)
 }
 
 void
-bsd_os_errno_set(int errno_val)
+nrf_modem_os_errno_set(int errno_val)
 {
 
 	dprintf("%s: %d\n", __func__, errno_val);
 }
 
 void
-bsd_os_application_irq_clear(void)
+nrf_modem_os_application_irq_clear(void)
 {
 
 	dprintf("%s\n", __func__);
@@ -206,7 +194,7 @@ bsd_os_application_irq_clear(void)
 }
 
 void
-bsd_os_application_irq_set(void)
+nrf_modem_os_application_irq_set(void)
 {
 
 	dprintf("%s\n", __func__);
@@ -214,7 +202,7 @@ bsd_os_application_irq_set(void)
 }
 
 void
-bsd_os_trace_irq_set(void)
+nrf_modem_os_trace_irq_set(void)
 {
 
 	dprintf("%s\n", __func__);
@@ -222,7 +210,7 @@ bsd_os_trace_irq_set(void)
 }
 
 void
-bsd_os_trace_irq_clear(void)
+nrf_modem_os_trace_irq_clear(void)
 {
 
 	dprintf("%s\n", __func__);
@@ -230,7 +218,7 @@ bsd_os_trace_irq_clear(void)
 }
 
 int32_t
-bsd_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
+nrf_modem_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
 {
 
 	dprintf("%s\n", __func__);

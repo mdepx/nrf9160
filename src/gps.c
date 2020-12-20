@@ -41,9 +41,9 @@
 
 #include <ftoa/ftoa.h>
 
-#include <nrfxlib/bsdlib/include/nrf_socket.h>
-#include <nrfxlib/bsdlib/include/bsd.h>
-#include <nrfxlib/bsdlib/include/bsd_os.h>
+#include <nrfxlib/nrf_modem/include/nrf_socket.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
 
 #include "gps.h"
 

@@ -38,10 +38,10 @@
 
 #include <arm/nordicsemi/nrf9160.h>
 
-#include <nrfxlib/bsdlib/include/nrf_socket.h>
-#include <nrfxlib/bsdlib/include/bsd.h>
-#include <nrfxlib/bsdlib/include/bsd_os.h>
-#include <nrfxlib/bsdlib/include/bsd_platform.h>
+#include <nrfxlib/nrf_modem/include/nrf_socket.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem_platform.h>
 
 #include "gps.h"
 
@@ -396,7 +396,7 @@ int
 main(void)
 {
 	mdx_device_t uart;
-	bsd_init_params_t init_params;
+	nrf_modem_init_params_t init_params;
 	int error;
 
 	uart = mdx_device_lookup_by_name("nrf_uarte", 0);
@@ -405,11 +405,11 @@ main(void)
 	nrf_uarte_register_callback(uart, nrf_input, NULL);
 
 	init_params.trace_on = true;
-	init_params.bsd_memory_address = BSD_RESERVED_MEMORY_ADDRESS;
-	init_params.bsd_memory_size = BSD_RESERVED_MEMORY_SIZE;
-	bsd_init(&init_params);
+	init_params.memory_address = NRF_MODEM_RESERVED_MEMORY_ADDRESS;
+	init_params.memory_size = NRF_MODEM_RESERVED_MEMORY_SIZE;
+	nrf_modem_init(&init_params);
 
-	printf("bsd library initialized\n");
+	printf("nrf_modem library initialized\n");
 
 	buffer_fill = 0;
 	ready_to_send = 0;
