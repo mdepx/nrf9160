@@ -35,6 +35,18 @@
 	chosen {
 		mdepx,console = &uart0;
 	};
+
+	soc {
+		peripheral@40000000 {
+			ipc: ipc@2a000 {
+				compatible = "nordic,nrf-ipc";
+				reg = <0x2a000 0x1000>;
+				interrupts = <42 1>;
+				status = "okay";
+				label = "IPC";
+			};
+		};
+	};
 };
 
 &uart0 {
