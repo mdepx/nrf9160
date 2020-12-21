@@ -73,8 +73,13 @@ nrfx_ipc_config_load(nrfx_ipc_config_t const * p_config)
 void
 nrfx_ipc_receive_event_disable(uint8_t event_index)
 {
+	mdx_device_t dev;
 
-	printf("%s: %d\n", __func__, event_index);
+	dev = mdx_device_lookup_by_name("nrf_ipc", 0);
+	if (dev == NULL)
+		panic("IPC device not found. Check your DTB\n");
+
+	nrf_ipc_inten(dev, event_index, false);
 }
 
 nrfx_err_t
@@ -101,6 +106,15 @@ nrfx_ipc_init(uint8_t irq_priority, nrfx_ipc_handler_t handler,
 void
 nrfx_ipc_uninit(void)
 {
+	mdx_device_t dev;
+	int i;
 
-	printf("%s\n", __func__);
+	dev = mdx_device_lookup_by_name("nrf_ipc", 0);
+
+	for (i = 0; i < IPC_CONF_NUM; i++)
+		nrf_ipc_configure_send(dev, i, 0);
+	for (i = 0; i < IPC_CONF_NUM; i++)
+		nrf_ipc_configure_recv(dev, i, 0, NULL, NULL);
+
+	nrf_ipc_inten_chanmask(dev, 0xffffffff, false);
 }
