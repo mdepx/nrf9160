@@ -91,6 +91,37 @@ static char buffer[LC_MAX_READ_LENGTH];
 static int buffer_fill;
 static int ready_to_send;
 
+#define	NRF_MODEM_OS_SHMEM_CTRL_ADDR	0x20010000
+#define	NRF_MODEM_OS_SHMEM_CTRL_SIZE	NRF_MODEM_SHMEM_CTRL_SIZE
+#define	NRF_MODEM_OS_SHMEM_TX_ADDR	0x20011000
+#define	NRF_MODEM_OS_SHMEM_TX_SIZE	0x5000
+#define	NRF_MODEM_OS_SHMEM_RX_ADDR	0x20016000
+#define	NRF_MODEM_OS_SHMEM_RX_SIZE	0x5000
+
+CTASSERT(NRF_MODEM_OS_SHMEM_CTRL_SIZE <= 0x1000);
+
+static const nrf_modem_init_params_t init_params = {
+	.ipc_irq_prio = NRF_MODEM_NETWORK_IRQ_PRIORITY,
+	.shmem.ctrl = {
+		.base = NRF_MODEM_OS_SHMEM_CTRL_ADDR,
+		.size = NRF_MODEM_OS_SHMEM_CTRL_SIZE,
+	},
+	.shmem.tx = {
+		.base = NRF_MODEM_OS_SHMEM_TX_ADDR,
+		.size = NRF_MODEM_OS_SHMEM_TX_SIZE,
+	},
+	.shmem.rx = {
+		.base = NRF_MODEM_OS_SHMEM_RX_ADDR,
+		.size = NRF_MODEM_OS_SHMEM_RX_SIZE,
+	},
+#if 0
+	.shmem.trace = {
+		.base = NRF_MODEM_OS_TRACE_ADDRESS,
+		.size =	NRF_MODEM_OS_TRACE_SIZE,
+	},
+#endif
+};
+
 static int
 at_send(int fd, const char *cmd, size_t size)
 {
@@ -396,7 +427,6 @@ int
 main(void)
 {
 	mdx_device_t uart;
-	nrf_modem_init_params_t init_params;
 	int error;
 
 	uart = mdx_device_lookup_by_name("nrf_uarte", 0);
@@ -404,10 +434,7 @@ main(void)
 		panic("uart dev not found");
 	nrf_uarte_register_callback(uart, nrf_input, NULL);
 
-	init_params.trace_on = true;
-	init_params.memory_address = NRF_MODEM_RESERVED_MEMORY_ADDRESS;
-	init_params.memory_size = NRF_MODEM_RESERVED_MEMORY_SIZE;
-	nrf_modem_init(&init_params);
+	nrf_modem_init(&init_params, NORMAL_MODE);
 
 	printf("nrf_modem library initialized\n");
 

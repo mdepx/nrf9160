@@ -225,3 +225,37 @@ nrf_modem_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
 
 	return (0);
 }
+
+void *
+nrf_modem_os_alloc(size_t bytes)
+{
+	void *addr;
+
+	addr = malloc(bytes);
+
+	return (addr);
+}
+
+void
+nrf_modem_os_free(void *mem)
+{
+
+	free(mem);
+}
+
+void *
+nrf_modem_os_shm_tx_alloc(size_t bytes)
+{
+	void *addr;
+
+	addr = malloc(bytes);
+
+	return (addr);
+}
+
+void
+nrf_modem_os_shm_tx_free(void *mem)
+{
+
+	free(mem);
+}
