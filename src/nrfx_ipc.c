@@ -82,6 +82,18 @@ nrfx_ipc_receive_event_disable(uint8_t event_index)
 	nrf_ipc_inten(dev, event_index, false);
 }
 
+void
+nrfx_ipc_receive_event_enable(uint8_t event_index)
+{
+	mdx_device_t dev;
+
+	dev = mdx_device_lookup_by_name("nrf_ipc", 0);
+	if (dev == NULL)
+		panic("IPC device not found. Check your DTB\n");
+
+	nrf_ipc_inten(dev, event_index, true);
+}
+
 nrfx_err_t
 nrfx_ipc_init(uint8_t irq_priority, nrfx_ipc_handler_t handler,
     void *p_context)

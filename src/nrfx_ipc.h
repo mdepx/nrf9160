@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2020 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2020-2021 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@ typedef struct {
 nrfx_err_t nrfx_ipc_init(uint8_t irq_priority, nrfx_ipc_handler_t handler,
     void *p_context);
 void nrfx_ipc_receive_event_disable(uint8_t event_index);
+void nrfx_ipc_receive_event_enable(uint8_t event_index);
 void nrfx_ipc_uninit(void);
 void nrfx_ipc_config_load(nrfx_ipc_config_t const * p_config);
 
