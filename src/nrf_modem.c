@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2019-2020 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2019-2021 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
