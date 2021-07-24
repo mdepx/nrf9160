@@ -259,3 +259,22 @@ nrf_modem_os_shm_tx_free(void *mem)
 
 	free(mem);
 }
+
+bool
+nrf_modem_os_is_in_isr(void)
+{
+
+	/*
+	 * TODO: should we have some flag set for intr thread?
+	 * So we can use it here.
+	 */
+
+	return (curthread->td_critnest > 0);
+}
+
+void
+nrf_modem_os_busywait(int32_t usec)
+{
+
+	udelay(usec);
+}

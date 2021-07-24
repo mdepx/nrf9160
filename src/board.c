@@ -31,6 +31,15 @@
 
 #include <arm/nordicsemi/nrf9160.h>
 
+static struct nrf_timer_softc *timer_sc;
+
+void
+udelay(uint32_t usec)
+{
+
+	nrf_timer_udelay(timer_sc, usec);
+}
+
 void
 board_init(void)
 {
@@ -48,6 +57,11 @@ board_init(void)
 	if (!dev)
 		panic("nvmc dev not found");
 	nrf_nvmc_icache_control(dev, true);
+
+	dev = mdx_device_lookup_by_name("nrf_timer", 0);
+	if (!dev)
+		panic("timer dev not found");
+	timer_sc = mdx_device_get_softc(dev);
 
 	printf("mdepx initialized\n");
 }
