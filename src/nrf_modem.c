@@ -144,14 +144,9 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 		return (NRF_ETIMEDOUT);
 	}
 
-	/*
-	 * Note that rpc_proxy interrupt could fire right here.
-	 * To handle that situation don't wait forever,
-	 * just set some reasonable timeout.
-	 */
 	if (val < 0)
-		tmout = 10000000; /* 10 sec. */
-	else if (val > 0)
+		tmout = 0;
+	else
 		tmout = val * 1000;
 
 	mdx_sem_init(&td.sem, 0);
