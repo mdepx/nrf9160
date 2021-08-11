@@ -50,7 +50,6 @@ struct sleeping_thread {
 	mdx_sem_t sem;
 };
 
-static struct mdx_mutex bsdos_mtx;
 static struct entry sleeping_thread_list;
 static mdx_device_t nvic;
 
@@ -114,7 +113,6 @@ nrf_modem_os_init(void)
 
 	dprintf("%s\n", __func__);
 
-	mdx_mutex_init(&bsdos_mtx);
 	list_init(&sleeping_thread_list);
 
 	nvic = mdx_device_lookup_by_name("nvic", 0);
