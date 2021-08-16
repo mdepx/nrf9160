@@ -322,7 +322,7 @@ nrf_modem_os_sem_take(void *arg, int timeout)
 
 	err = mdx_sem_timedwait(sem, timeout == -1 ? 0 : timeout * 1000);
 	if (err == 0)
-		return NRF_ETIMEDOUT;
+		return (NRF_ETIMEDOUT);
 
 	return (0);
 }
