@@ -271,3 +271,58 @@ nrf_modem_os_busywait(int32_t usec)
 
 	udelay(usec);
 }
+
+#define NRF_MODEM_OS_SEM_MAX 2
+
+static mdx_sem_t nrf_modem_os_semaphores[NRF_MODEM_OS_SEM_MAX];
+static uint8_t used = 0;
+
+int
+nrf_modem_os_sem_init(void **arg, unsigned int initial_count,
+    unsigned int limit)
+{
+	mdx_sem_t *sem;
+	int i;
+
+	sem = *arg;
+
+	for (i = 0; i < NRF_MODEM_OS_SEM_MAX; i++)
+		if (&nrf_modem_os_semaphores[i] == sem)
+			goto reinit;
+
+	KASSERT(used < NRF_MODEM_OS_SEM_MAX, ("Max semaphores reached."));
+
+	sem = &nrf_modem_os_semaphores[used++];
+
+	*arg = sem;
+
+reinit:
+	mdx_sem_init(sem, initial_count);
+
+	return (0);
+}
+
+void
+nrf_modem_os_sem_give(void *arg)
+{
+	mdx_sem_t *sem;
+
+	sem = arg;
+
+	mdx_sem_post(sem);
+}
+
+int
+nrf_modem_os_sem_take(void *arg, int timeout)
+{
+	mdx_sem_t *sem;
+	int err;
+
+	sem = arg;
+
+	err = mdx_sem_timedwait(sem, timeout == -1 ? 0 : timeout * 1000);
+	if (err == 0)
+		return NRF_ETIMEDOUT;
+
+	return (0);
+}
