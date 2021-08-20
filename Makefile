@@ -25,6 +25,12 @@ flash:
 	nrfjprog -f NRF91 --erasepage 0x40000-0x60000
 	nrfjprog -f NRF91 --program obj/nrf9160.hex -r
 
+objdump:
+	@${CROSS_COMPILE}objdump -d obj/${APP}.elf | less
+
+readelf:
+	@${CROSS_COMPILE}readelf -a obj/${APP}.elf | less
+
 reset:
 	nrfjprog -f NRF91 -r
 
