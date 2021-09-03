@@ -33,7 +33,7 @@
 	compatible = "nordic,nRF9160";
 
 	chosen {
-		mdepx,console = &uart0;
+		stdout-path = "/soc/peripheral@40000000/uart@8000/";
 	};
 
 	soc {
