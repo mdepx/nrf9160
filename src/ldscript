@@ -23,12 +23,6 @@ SECTIONS
 		*(.text*);
 	} > flash
 
-	.sysinit : {
-		__sysinit_start = ABSOLUTE(.);
-		*(.sysinit)
-		__sysinit_end = ABSOLUTE(.);
-	} > flash
-
 	.rodata : {
 		*(.rodata*);
 	} > flash
@@ -39,6 +33,15 @@ SECTIONS
 	.data : {
 		_sdata = ABSOLUTE(.);
 		*(.data*);
+
+		/*
+		 * Ensure sysinit is within the data,
+		 * so will be relocated from flash to sram.
+		 */
+		__start_set_sysinit_set = ABSOLUTE(.);
+		*(set_sysinit*)
+		__stop_set_sysinit_set = ABSOLUTE(.);
+
 		_edata = ABSOLUTE(.);
 	} > sram2 AT > flash
 
