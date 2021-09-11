@@ -28,6 +28,7 @@
 #include <sys/of.h>
 #include <sys/thread.h>
 #include <sys/malloc.h>
+#include <sys/console.h>
 
 #include <arm/nordicsemi/nrf9160.h>
 
@@ -50,7 +51,13 @@ board_init(void)
 	malloc_add_region((void *)0x20030000, 0x10000);
 
 	mdx_of_install_dtbp((void *)0xf8000);
-	mdx_of_probe_devices();
+	mi_startup();
+
+	/* Register console. */
+	dev = mdx_device_lookup_by_name("nrf_uarte", 0);
+	if (!dev)
+		panic("uart dev not found");
+	mdx_console_register_uart(dev);
 
 	/* Enable the instruction cache. */
 	dev = mdx_device_lookup_by_name("nrf_nvmc", 0);
