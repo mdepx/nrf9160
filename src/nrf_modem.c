@@ -91,7 +91,7 @@ static void
 trace_proxy_intr(void *arg, int irq)
 {
 
-	nrf_modem_os_trace_irq_handler();
+	nrf_modem_trace_irq_handler();
 }
 
 static void
@@ -101,7 +101,7 @@ rpc_proxy_intr(void *arg, int irq)
 
 	dprintf(",");
 
-	nrf_modem_os_application_irq_handler();
+	nrf_modem_application_irq_handler();
 
 	for (td = td_first(); td != NULL; td = td_next(td))
 		mdx_sem_post(&td->sem);

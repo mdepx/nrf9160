@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2020 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2020-2021 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,5 @@
 #define	_SRC_GPS_H_
 
 int gps_init(void);
-int gps_test(void);
 
 #endif /* !_SRC_GPS_H_ */

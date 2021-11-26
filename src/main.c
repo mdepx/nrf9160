@@ -446,10 +446,8 @@ main(void)
 	error = gps_init();
 	if (error)
 		printf("Can't initialize GPS\n");
-	else {
+	else
 		printf("GPS initialized\n");
-		gps_test();
-	}
 
 	while (1)
 		mdx_usleep(1000000);

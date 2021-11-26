@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2020 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2020-2021 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,13 +41,8 @@
 
 #include <ftoa/ftoa.h>
 
-#include <nrfxlib/nrf_modem/include/nrf_socket.h>
-#include <nrfxlib/nrf_modem/include/nrf_modem.h>
-#include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
-
+#include <nrfxlib/nrf_modem/include/nrf_modem_gnss.h>
 #include "gps.h"
-
-static int socket;
 
 /* GNSS delete mask */
 #define	GNSS_DEL_EPHEMERIDES		(1 << 0)
@@ -59,13 +54,15 @@ static int socket;
 #define	GNSS_DEL_LEAP_SECOND		(1 << 6)
 #define	GNSS_DEL_LOCAL_CLOCK_FOD	(1 << 7) /* Frequency offset data */
 
+static void gnss_event_handler(int event);
+
 static void
-print_stats(nrf_gnss_pvt_data_frame_t *pvt)
+print_stats(struct nrf_modem_gnss_pvt_data_frame *pvt)
 {
-	nrf_gnss_sv_t *sv;
+	struct nrf_modem_gnss_sv *sv;
 	int i;
 
-	for (i = 0; i < NRF_GNSS_MAX_SATELLITES; i++) {
+	for (i = 0; i < NRF_MODEM_GNSS_MAX_SATELLITES; i++) {
 		sv = &pvt->sv[i];
 
 		if (sv->sv > 0 && sv->sv <= 32) {
@@ -73,12 +70,12 @@ print_stats(nrf_gnss_pvt_data_frame_t *pvt)
 			    sv->sv, sv->signal, sv->cn0, sv->elevation,
 			    sv->azimuth, sv->flags);
 
-			if (pvt->sv[i].flags & NRF_GNSS_SV_FLAG_USED_IN_FIX)
-			    printf("sat in fix %d\n", pvt->sv[i].sv);
-                        if (pvt->sv[i].flags & NRF_GNSS_SV_FLAG_UNHEALTHY)
-			    printf("sat unhealthy %d\n", pvt->sv[i].sv);
+			if (pvt->sv[i].flags &
+			    NRF_MODEM_GNSS_SV_FLAG_USED_IN_FIX)
+				printf("sat in fix %d\n", pvt->sv[i].sv);
+                        if (pvt->sv[i].flags & NRF_MODEM_GNSS_SV_FLAG_UNHEALTHY)
+				printf("sat unhealthy %d\n", pvt->sv[i].sv);
 		}
-
 	}
 }
 
@@ -138,61 +135,47 @@ fpu_test(void)
 int
 gps_init(void)
 {
-	nrf_gnss_fix_retry_t fix_retry;
-	nrf_gnss_fix_interval_t fix_interval;
-	nrf_gnss_nmea_mask_t nmea_mask;
-	nrf_gnss_delete_mask_t delete_mask;
+	int fix_retry;
+	int fix_interval;
+	int nmea_mask;
+	//int delete_mask;
 	int error;
 
-	socket = nrf_socket(NRF_AF_LOCAL, NRF_SOCK_DGRAM, NRF_PROTO_GNSS);
-	if (socket < 0) {
-		printf("can't make GPS socket\n");
-		return (-1);
-	}
+	nrf_modem_gnss_event_handler_set(gnss_event_handler);
 
 	fix_retry = 0;
 	fix_interval = 1;
-	nmea_mask = NRF_GNSS_NMEA_GGA_MASK;
+	nmea_mask = NRF_MODEM_GNSS_NMEA_GGA_MASK;
 #if 0
-	nmea_mask |= NRF_GNSS_NMEA_GSV_MASK |
-		NRF_GNSS_NMEA_GSA_MASK |
-		NRF_GNSS_NMEA_GLL_MASK |
-		NRF_GNSS_NMEA_GGA_MASK |
-		NRF_GNSS_NMEA_RMC_MASK;
+	nmea_mask |= NRF_MODEM_GNSS_NMEA_GSV_MASK |
+		NRF_MODEM_GNSS_NMEA_GSA_MASK |
+		NRF_MODEM_GNSS_NMEA_GLL_MASK |
+		NRF_MODEM_GNSS_NMEA_GGA_MASK |
+		NRF_MODEM_GNSS_NMEA_RMC_MASK;
 #endif
 
-	delete_mask = 0;
+	//delete_mask = 0;
 
-	error = nrf_setsockopt(socket,
-				NRF_SOL_GNSS,
-				NRF_SO_GNSS_FIX_RETRY,
-				&fix_retry, sizeof(fix_retry));
+	error = nrf_modem_gnss_fix_retry_set(fix_retry);
 	if (error) {
 		printf("%s: Can't set fix retry: error %d\n", __func__, error);
 		return (-1);
 	}
 
-	error = nrf_setsockopt(socket,
-				NRF_SOL_GNSS,
-				NRF_SO_GNSS_FIX_INTERVAL,
-				&fix_interval,
-				sizeof(fix_interval));
+	error = nrf_modem_gnss_fix_interval_set(fix_interval);
 	if (error) {
 		printf("%s: Can't set fix interval: error %d\n",
 		    __func__, error);
 		return (-1);
 	}
 
-	error = nrf_setsockopt(socket,
-				NRF_SOL_GNSS,
-				NRF_SO_GNSS_NMEA_MASK,
-				&nmea_mask,
-				sizeof(nmea_mask));
+	error = nrf_modem_gnss_nmea_mask_set(nmea_mask);
 	if (error) {
 		printf("%s: Can't set NMEA mask: error %d\n", __func__, error);
 		return (-1);
 	}
 
+#if 0
 	error = nrf_setsockopt(socket,
 				NRF_SOL_GNSS,
 				NRF_SO_GNSS_START,
@@ -203,16 +186,18 @@ gps_init(void)
 		    __func__, error);
 		return (-1);
 	}
+#endif
+
+	nrf_modem_gnss_start();
 
 	return (0);
 }
 
-int
-gps_test(void)
+static void
+gnss_event_handler(int event)
 {
-	int len;
-	nrf_gnss_data_frame_t raw_gps_data;
-	nrf_gnss_pvt_data_frame_t *pvt;
+	struct nrf_modem_gnss_nmea_data_frame nmea_data;
+	struct nrf_modem_gnss_pvt_data_frame pvt;
 	bool blocked;
 	bool data_avail;
 	char lat[32];
@@ -221,52 +206,44 @@ gps_test(void)
 	blocked = false;
 	data_avail = false;
 
-	while (1) {
-		len = nrf_recv(socket, &raw_gps_data,
-		    sizeof(nrf_gnss_data_frame_t), 0);
-		if (len <= 0)
-			break;
-
-		switch (raw_gps_data.data_id) {
-		case NRF_GNSS_PVT_DATA_ID:
-			pvt = &raw_gps_data.pvt;
-			print_stats(pvt);
-			if (pvt->flags &
-			    NRF_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME) {
-				blocked = true;
-				printf("GPS blocked\n");
-				break;
-			}
-			blocked = false;
-
-			if (pvt->flags & NRF_GNSS_PVT_FLAG_DEADLINE_MISSED) {
-				printf("pvt deadline missed\n");
-				break;
-			}
-
-			if (pvt->flags & NRF_GNSS_PVT_FLAG_FIX_VALID_BIT) {
-				ftoa(pvt->latitude, lat, -1);
-				ftoa(pvt->longitude, lon, -1);
-				printf("pvt data: latitude %s longitude %s\n",
-				    lat, lon);
-				data_avail = true;
-			}
-
-			break;
-		case NRF_GNSS_NMEA_DATA_ID:
-			if (blocked == false && data_avail == true) {
-				printf("nmea data: %s\n", raw_gps_data.nmea);
-				data_avail = false;
-			}
-			break;
-		case NRF_GNSS_AGPS_DATA_ID:
-			printf("agps data id\n");
-			break;
-		default:
-			printf("unknown id %d\n", raw_gps_data.data_id);
+	switch (event) {
+	case NRF_MODEM_GNSS_EVT_PVT:
+		nrf_modem_gnss_read(&pvt, sizeof(pvt),
+		    NRF_MODEM_GNSS_DATA_PVT);
+		print_stats(&pvt);
+		if (pvt.flags &
+		    NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME) {
+			blocked = true;
+			printf("GPS blocked\n");
 			break;
 		}
-	}
+		blocked = false;
 
-	return (0);
+		if (pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_DEADLINE_MISSED) {
+			printf("pvt deadline missed\n");
+			break;
+		}
+
+		if (pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
+			ftoa(pvt.latitude, lat, -1);
+			ftoa(pvt.longitude, lon, -1);
+			printf("pvt data: latitude %s longitude %s\n",
+			    lat, lon);
+			data_avail = true;
+		}
+
+		break;
+	case NRF_MODEM_GNSS_EVT_NMEA:
+		if (blocked == false && data_avail == true) {
+			printf("nmea data: %s\n", nmea_data.nmea_str);
+			data_avail = false;
+		}
+		break;
+	case NRF_MODEM_GNSS_EVT_AGPS_REQ:
+		printf("agps data id\n");
+		break;
+	default:
+		printf("unknown event id %d\n", event);
+		break;
+	}
 }

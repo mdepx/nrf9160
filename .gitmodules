@@ -3,4 +3,4 @@
 	url = https://github.com/NordicPlayground/nrfxlib
 [submodule "mdepx"]
 	path = mdepx
-	url = https://github.com/machdep/mdepx
+	url = https://github.com/mdepx/mdepx
