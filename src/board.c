@@ -32,7 +32,14 @@
 
 #include <arm/nordicsemi/nrf9160.h>
 
+#define	EARLY_PRINTF
+#undef	EARLY_PRINTF
+
 static struct nrf_timer_softc *timer_sc;
+
+#ifdef EARLY_PRINTF
+struct mdx_device uart;
+#endif
 
 void
 udelay(uint32_t usec)
@@ -49,6 +56,11 @@ board_init(void)
 	/* Add some memory so OF could allocate devices and their softc. */
 	malloc_init();
 	malloc_add_region((void *)0x20030000, 0x10000);
+
+#ifdef EARLY_PRINTF
+	nrf_uarte_init(&uart, 0x40008000, 29, 28);
+	mdx_console_register_uart(&uart);
+#endif
 
 	mdx_of_install_dtbp((void *)0xf8000);
 	mi_startup();
