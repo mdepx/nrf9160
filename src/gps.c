@@ -138,13 +138,14 @@ gps_init(void)
 	int fix_retry;
 	int fix_interval;
 	int nmea_mask;
-	//int delete_mask;
 	int error;
 
 	nrf_modem_gnss_event_handler_set(gnss_event_handler);
 
+	/* Continuous tracking. */
 	fix_retry = 0;
 	fix_interval = 1;
+
 	nmea_mask = NRF_MODEM_GNSS_NMEA_GGA_MASK;
 #if 0
 	nmea_mask |= NRF_MODEM_GNSS_NMEA_GSV_MASK |
@@ -153,8 +154,6 @@ gps_init(void)
 		NRF_MODEM_GNSS_NMEA_GGA_MASK |
 		NRF_MODEM_GNSS_NMEA_RMC_MASK;
 #endif
-
-	//delete_mask = 0;
 
 	error = nrf_modem_gnss_fix_retry_set(fix_retry);
 	if (error) {
@@ -174,19 +173,6 @@ gps_init(void)
 		printf("%s: Can't set NMEA mask: error %d\n", __func__, error);
 		return (-1);
 	}
-
-#if 0
-	error = nrf_setsockopt(socket,
-				NRF_SOL_GNSS,
-				NRF_SO_GNSS_START,
-				&delete_mask,
-				sizeof(delete_mask));
-	if (error) {
-		printf("%s: Can't set delete mask: error %d\n",
-		    __func__, error);
-		return (-1);
-	}
-#endif
 
 	nrf_modem_gnss_start();
 
