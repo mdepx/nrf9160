@@ -137,6 +137,7 @@ gps_init(void)
 {
 	int fix_retry;
 	int fix_interval;
+	int power_mode;
 	int nmea_mask;
 	int error;
 
@@ -154,6 +155,18 @@ gps_init(void)
 		NRF_MODEM_GNSS_NMEA_GGA_MASK |
 		NRF_MODEM_GNSS_NMEA_RMC_MASK;
 #endif
+
+	/*
+	 * power_mode = NRF_MODEM_GNSS_PSM_DUTY_CYCLING_PERFORMANCE;
+	 * power_mode = NRF_MODEM_GNSS_PSM_DUTY_CYCLING_POWER;
+	 */
+	power_mode = NRF_MODEM_GNSS_PSM_DISABLED;
+
+	error = nrf_modem_gnss_power_mode_set(power_mode);
+	if (error) {
+		printf("%s: Can't set power mode: error %d\n", __func__, error);
+		return (-1);
+	}
 
 	error = nrf_modem_gnss_fix_retry_set(fix_retry);
 	if (error) {
