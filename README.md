@@ -19,7 +19,7 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/machd
 ### Get sources and build the project
     $ git clone --recursive https://github.com/machdep/nrf9160
     $ cd nrf9160
-    $ make
+    $ make clean all
 
 ## Program the chip using nrfjprog
     $ make dtb
