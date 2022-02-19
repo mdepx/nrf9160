@@ -163,31 +163,6 @@ lte_signal(void)
 	return (0);
 }
 
-static void __unused
-lte_at_client(void *arg)
-{
-	int fd;
-	int len;
-
-	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_DGRAM, NRF_IPPROTO_TCP);
-	if (fd < 0)
-		printf("failed to create socket\n");
-
-	while (1) {
-		if (ready_to_send) {
-			nrf_send(fd, buffer, buffer_fill, 0);
-
-			ready_to_send = 0;
-			buffer_fill = 0;
-
-			len = nrf_recv(fd, buffer, LC_MAX_READ_LENGTH, 0);
-			if (len)
-				printf("%s\n", buffer);
-		}
-		mdx_usleep(10000);
-	}
-}
-
 #define	PORT_MAX_SIZE	5 /* 0xFFFF = 65535 */
 #define	PDN_ID_MAX_SIZE	2 /* 0..10 */
 
