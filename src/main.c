@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2018-2021 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2018-2022 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +42,7 @@
 #include <nrfxlib/nrf_modem/include/nrf_modem.h>
 #include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
 #include <nrfxlib/nrf_modem/include/nrf_modem_platform.h>
+#include <nrfxlib/nrf_modem/include/nrf_modem_at.h>
 
 #include "gps.h"
 
@@ -56,7 +57,7 @@ extern struct nrf_uarte_softc uarte_sc;
 static const char cind[] __unused = "AT+CIND?";
 static const char subscribe[] = "AT+CEREG=5";
 static const char lock_bands[] __unused =
-    "AT\%XBANDLOCK=2,\"10000001000000001100\"";
+    "AT%%XBANDLOCK=2,\"10000001000000001100\"";
 static const char normal[] = "AT+CFUN=1";
 static const char flight[] __unused = "AT+CFUN=4";
 static const char gps_enable[] __unused = "AT+CFUN=31";
@@ -76,16 +77,16 @@ static const char psm_req[] = "AT+CPSMS=1,,,\"00000110\",\"00000000\"";
 /* Request eDRX to be disabled */
 static const char edrx_disable[] = "AT+CEDRXS=3";
 
-static const char magpio[] __unused = "AT\%XMAGPIO=1,0,0,1,1,1574,1577";
-static const char coex0[] __unused = "AT\%XCOEX0=1,1,1570,1580";
+static const char magpio[] __unused = "AT%%XMAGPIO=1,0,0,1,1,1574,1577";
+static const char coex0[] __unused = "AT%%XCOEX0=1,1,1570,1580";
 
 /*
  * %XSYSTEMMODE=<M1_support>,<NB1_support>,<GNSS_support>,<LTE_preference>
  */
 
-static const char systm_mode[] __unused = "AT%XSYSTEMMODE?";
-static const char nbiot_gps[] __unused = "AT%XSYSTEMMODE=0,1,1,0";
-static const char catm1_gps[] __unused = "AT%XSYSTEMMODE=1,0,1,0";
+static const char systm_mode[] __unused = "AT%%XSYSTEMMODE?";
+static const char nbiot_gps[] __unused = "AT%%XSYSTEMMODE=0,1,1,0";
+static const char catm1_gps[] __unused = "AT%%XSYSTEMMODE=1,0,1,0";
 
 static char buffer[LC_MAX_READ_LENGTH];
 static int buffer_fill;
@@ -122,49 +123,9 @@ static const nrf_modem_init_params_t init_params = {
 #endif
 };
 
-static int
-at_send(int fd, const char *cmd, size_t size)
-{
-	int len;
-
-	len = nrf_send(fd, cmd, size, 0);
-	if (len != size) {
-		printf("send failed\n");
-		return (-1);
-	}
-
-	return (0);
-}
-
-static int
-at_recv(int fd, char *buf, int bufsize)
-{
-	int len;
-
-	len = nrf_recv(fd, buf, bufsize, 0);
-
-	return (len);
-}
-
-static int
-at_cmd(int fd, const char *cmd, size_t size)
-{
-	char buffer[LC_MAX_READ_LENGTH];
-	int len;
-
-	printf("send: %s\n", cmd);
-
-	if (at_send(fd, cmd, size) == 0) {
-		len = at_recv(fd, buffer, LC_MAX_READ_LENGTH);
-		if (len)
-			printf("recv: %s\n", buffer);
-	}
-
-	return (0);
-}
-
+#if 0
 static void
-lte_signal(int fd)
+lte_signal(void)
 {
 	char buf[LC_MAX_READ_LENGTH];
 	float rsrq;
@@ -196,6 +157,7 @@ lte_signal(int fd)
 		    rsrq, rsrp);
 	}
 }
+#endif
 
 static void __unused
 lte_at_client(void *arg)
@@ -203,7 +165,7 @@ lte_at_client(void *arg)
 	int fd;
 	int len;
 
-	fd = nrf_socket(NRF_AF_LTE, NRF_SOCK_DGRAM, NRF_PROTO_AT);
+	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_DGRAM, NRF_IPPROTO_TCP);
 	if (fd < 0)
 		printf("failed to create socket\n");
 
@@ -222,6 +184,13 @@ lte_at_client(void *arg)
 	}
 }
 
+#define	PORT_MAX_SIZE	5 /* 0xFFFF = 65535 */
+#define	PDN_ID_MAX_SIZE	2 /* 0..10 */
+
+struct nrf_addrinfo hints = {
+	.ai_flags = NRF_AI_PDNSERV,
+};
+
 static void
 connect_to_server(void)
 {
@@ -236,7 +205,10 @@ connect_to_server(void)
 	if (fd < 0)
 		panic("failed to create socket");
 
-	err = nrf_getaddrinfo(TCP_HOST, NULL, NULL, &server_addr);
+	nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_BINDTODEVICE, "0",
+	    strlen("0"));
+
+	err = nrf_getaddrinfo(TCP_HOST, "pdn0", &hints, &server_addr);
 	if (err != 0)
 		panic("getaddrinfo failed with error %d\n", err);
 
@@ -260,8 +232,8 @@ connect_to_server(void)
 		panic("Bind failed: %d\n", err);
 
 	printf("Connecting to server...\n");
-	err = nrf_connect(fd, s,
-	    sizeof(struct nrf_sockaddr_in));
+
+	err = nrf_connect(fd, s, sizeof(struct nrf_sockaddr_in));
 	if (err != 0)
 		panic("TCP connect failed: err %d\n", err);
 
@@ -304,91 +276,91 @@ check_ipaddr(char *buf)
 }
 
 static int
-lte_wait(int fd)
+lte_wait(void)
 {
-	char buf[LC_MAX_READ_LENGTH];
-	int len;
-	char *t;
-	char *p;
+	uint32_t cell_id;
+	uint16_t status;
+	int err;
 
 	printf("Awaiting registration in the LTE-M network...\n");
 
+	cell_id = 0;
+
 	while (1) {
-		len = at_recv(fd, buf, LC_MAX_READ_LENGTH);
-		if (len) {
-			printf("recv: %s\n", buf);
-			t = (char *)buf;
-			p = strsep(&t, ",");
-			if (p != NULL) {
-				/* Check network registration status. */
+		err = nrf_modem_at_scanf("AT+CEREG?",
+			"+CEREG: "
+			"%*u,"          /* <n> */
+			"%u,"           /* <stat> */
+			"%*[^,],"       /* <tac> */
+			"\"%x\",",      /* <ci> */
+			&status, &cell_id);
+		printf("%s: err %d, status %d, cell_id %x\n",
+		    __func__, err, status, cell_id);
 
-				if (strcmp(p, "+CEREG: 3") == 0) {
-					printf("Registration denied\n");
-					return (-1);
-				}
-
-				if (strcmp(p, "+CEREG: 5") == 0) {
-					printf("Registered, roaming.\n");
-					break;
-				}
-
-				if (strcmp(p, "+CEREG: 1") == 0) {
-					printf("Registered, home network.\n");
-					break;
-				}
-			}
+		switch (status) {
+		case 1:
+			printf("Registered, home network.\n");
+			return (0);
+		case 3:
+			printf("Registration denied\n");
+			return (1);
+		case 5:
+			printf("Registered, roaming.\n");
+			return (0);
 		}
 
 		mdx_usleep(1000000);
 	}
 
-	lte_signal(fd);
-
 	return (0);
+}
+
+static int
+lte_at(const char *cmd)
+{
+	int err;
+
+	err = nrf_modem_at_printf(cmd);
+	if (err)
+		printf("%s: Could not issue cmd %s, err %d\n", __func__,
+		    cmd, err);
+
+	return (err);
 }
 
 static int
 lte_connect(void)
 {
-	int fd;
-
-	fd = nrf_socket(NRF_AF_LTE, NRF_SOCK_DGRAM, NRF_PROTO_AT);
-	if (fd < 0) {
-		printf("failed to create socket\n");
-		return (-1);
-	}
-
-	printf("AT lte socket %d\n", fd);
 
 	/* Switch to the flight mode. */
-	at_cmd(fd, flight, AT_CMD_SIZE(flight));
+	lte_at(flight);
 
 	/* Read current system mode. */
-	at_cmd(fd, systm_mode, AT_CMD_SIZE(systm_mode));
+	lte_at(systm_mode);
 
 	/* Set new system mode */
-	at_cmd(fd, catm1_gps, AT_CMD_SIZE(catm1_gps));
+	lte_at(catm1_gps);
 
 	/* GPS: nrf9160-DK only. */
-	at_cmd(fd, magpio, AT_CMD_SIZE(magpio));
-	at_cmd(fd, coex0, AT_CMD_SIZE(coex0));
+	lte_at(magpio);
+	lte_at(coex0);
 
 	/* Switch to power saving mode as required for GPS to operate. */
-	at_cmd(fd, psm_req, AT_CMD_SIZE(psm_req));
+	lte_at(psm_req);
 
-	at_cmd(fd, cind, AT_CMD_SIZE(cind));
-	at_cmd(fd, edrx_req, AT_CMD_SIZE(edrx_req));
+	lte_at(cind);
+	lte_at(edrx_req);
 
 	/* Lock bands 3,4,13,20. */
-	at_cmd(fd, lock_bands, AT_CMD_SIZE(lock_bands));
+	lte_at(lock_bands);
 
 	/* Subscribe for events. */
-	at_send(fd, subscribe, AT_CMD_SIZE(subscribe));
+	lte_at(subscribe);
 
 	/* Switch to normal mode. */
-	at_cmd(fd, normal, AT_CMD_SIZE(normal));
+	lte_at(normal);
 
-	if (lte_wait(fd) == 0) {
+	if (lte_wait() == 0) {
 		printf("LTE connected\n");
 		connect_to_server();
 	} else
@@ -397,16 +369,16 @@ lte_connect(void)
 	mdx_usleep(500000);
 
 	/* Switch to GPS mode. */
-	at_cmd(fd, lte_disable, AT_CMD_SIZE(lte_disable));
+	lte_at(lte_disable);
 
 	mdx_usleep(500000);
 
-	at_cmd(fd, edrx_disable, AT_CMD_SIZE(edrx_disable));
+	lte_at(edrx_disable);
 
 	mdx_usleep(500000);
 
 	/* Switch to GPS mode. */
-	at_cmd(fd, gps_enable, AT_CMD_SIZE(gps_enable));
+	lte_at(gps_enable);
 
 	mdx_usleep(500000);
 
@@ -423,6 +395,13 @@ nrf_input(int c, void *arg)
 		buffer[buffer_fill++] = c;
 }
 
+static void
+callback(const char *notif)
+{
+
+	printf("%s: %s\n", __func__, notif);
+}
+
 int
 main(void)
 {
@@ -435,6 +414,7 @@ main(void)
 	nrf_uarte_register_callback(uart, nrf_input, NULL);
 
 	nrf_modem_init(&init_params, NORMAL_MODE);
+	nrf_modem_at_notif_handler_set(callback);
 
 	printf("nrf_modem library initialized\n");
 
