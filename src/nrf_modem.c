@@ -224,6 +224,8 @@ nrf_modem_os_alloc(size_t bytes)
 {
 	void *addr;
 
+	dprintf("%s: %d\n", __func__, bytes);
+
 	addr = malloc(bytes);
 
 	return (addr);
@@ -233,6 +235,8 @@ void
 nrf_modem_os_free(void *mem)
 {
 
+	dprintf("%s\n", __func__);
+
 	free(mem);
 }
 
@@ -240,6 +244,8 @@ void *
 nrf_modem_os_shm_tx_alloc(size_t bytes)
 {
 	void *addr;
+
+	dprintf("%s: %d\n", __func__, bytes);
 
 	addr = malloc(bytes);
 
@@ -249,6 +255,8 @@ nrf_modem_os_shm_tx_alloc(size_t bytes)
 void
 nrf_modem_os_shm_tx_free(void *mem)
 {
+
+	dprintf("%s\n", __func__);
 
 	free(mem);
 }
@@ -272,7 +280,7 @@ nrf_modem_os_busywait(int32_t usec)
 	udelay(usec);
 }
 
-#define NRF_MODEM_OS_SEM_MAX 2
+#define NRF_MODEM_OS_SEM_MAX NRF_MODEM_OS_NUM_SEM_REQUIRED
 
 static mdx_sem_t nrf_modem_os_semaphores[NRF_MODEM_OS_SEM_MAX];
 static uint8_t used = 0;
