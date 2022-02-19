@@ -106,7 +106,7 @@ test_thr(void *arg)
 	}
 }
 
-static void __unused
+void
 fpu_test(void)
 {
 	struct thread *td;

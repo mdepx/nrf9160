@@ -28,5 +28,6 @@
 #define	_SRC_GPS_H_
 
 int gps_init(void);
+void fpu_test(void);
 
 #endif /* !_SRC_GPS_H_ */
