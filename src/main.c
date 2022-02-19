@@ -46,6 +46,7 @@
 
 #include "gps.h"
 
+#define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
 #define	AT_CMD_SIZE(x)		(sizeof(x) - 1)
 
@@ -95,9 +96,9 @@ static int ready_to_send;
 #define	NRF_MODEM_OS_SHMEM_CTRL_ADDR	0x20010000
 #define	NRF_MODEM_OS_SHMEM_CTRL_SIZE	NRF_MODEM_SHMEM_CTRL_SIZE
 #define	NRF_MODEM_OS_SHMEM_TX_ADDR	0x20011000
-#define	NRF_MODEM_OS_SHMEM_TX_SIZE	0x5000
-#define	NRF_MODEM_OS_SHMEM_RX_ADDR	0x20016000
-#define	NRF_MODEM_OS_SHMEM_RX_SIZE	0x5000
+#define	NRF_MODEM_OS_SHMEM_TX_SIZE	0x7800
+#define	NRF_MODEM_OS_SHMEM_RX_ADDR	0x20018800
+#define	NRF_MODEM_OS_SHMEM_RX_SIZE	0x7800
 
 CTASSERT(NRF_MODEM_OS_SHMEM_CTRL_SIZE <= 0x1000);
 
@@ -123,41 +124,44 @@ static const nrf_modem_init_params_t init_params = {
 #endif
 };
 
-#if 0
+static char buf[AT_RESPONSE_LEN];
+
 static void
-lte_signal(void)
+lte_signal_quality_decode(char *t)
 {
-	char buf[LC_MAX_READ_LENGTH];
 	float rsrq;
 	int rsrp;
-	int len;
-	char *t, *p;
+	char *p;
+
+	p = strsep(&t, ",");	/* +CESQ: rxlev */
+	p = strsep(&t, ",");	/* ber */
+	p = strsep(&t, ",");	/* rscp */
+	p = strsep(&t, ",");	/* echo */
+	p = strsep(&t, ",");	/* rsrq */
+
+	rsrq = 20 - atoi(p) / 2;
+	p = strsep(&t, ",");
+	rsrp = 140 - atoi(p) + 1;
+
+	printf("LTE signal quality: rsrq -%.2f dB rsrp -%d dBm\n", rsrq, rsrp);
+}
+
+static int
+lte_signal(void)
+{
 
 	/* Extended signal quality */
-	at_send(fd, cesq, AT_CMD_SIZE(cesq));
-	len = at_recv(fd, buf, LC_MAX_READ_LENGTH);
-	if (len) {
-		printf("recv: %s\n", buf);
-
-		t = (char *)buf;
-
-		p = strsep(&t, ",");	/* +CESQ: rxlev */
-		p = strsep(&t, ",");	/* ber */
-		p = strsep(&t, ",");	/* rscp */
-		p = strsep(&t, ",");	/* echo */
-		p = strsep(&t, ",");	/* rsrq */
-
-		rsrq = 20 - atoi(p) / 2;
-
-		p = strsep(&t, ",");
-
-		rsrp = 140 - atoi(p) + 1;
-
-		printf("LTE signal quality: rsrq -%.2f dB rsrp -%d dBm\n",
-		    rsrq, rsrp);
+	int err;
+	err = nrf_modem_at_cmd(buf, AT_RESPONSE_LEN, cesq);
+	if (err) {
+		printf("%s: could not get signal quality err %d\n", err);
+		return (-1);
 	}
+
+	lte_signal_quality_decode(buf);
+
+	return (0);
 }
-#endif
 
 static void __unused
 lte_at_client(void *arg)
@@ -362,6 +366,7 @@ lte_connect(void)
 
 	if (lte_wait() == 0) {
 		printf("LTE connected\n");
+		lte_signal();
 		connect_to_server();
 	} else
 		printf("Failed to connect to LTE\n");
