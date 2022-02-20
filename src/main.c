@@ -129,11 +129,16 @@ static const nrf_modem_init_params_t init_params = {
 static char buf[AT_RESPONSE_LEN];
 
 static void
-lte_signal_quality_decode(char *t)
+lte_signal_quality_decode(const char *at_s)
 {
 	float rsrq;
 	int rsrp;
 	char *p;
+	char *t;
+
+	strncpy((char *)buf, at_s, AT_RESPONSE_LEN);
+
+	t = buf;
 
 	p = strsep(&t, ",");	/* +CESQ: rxlev */
 	p = strsep(&t, ",");	/* ber */
@@ -154,13 +159,11 @@ lte_signal(void)
 
 	/* Extended signal quality */
 	int err;
-	err = nrf_modem_at_cmd(buf, AT_RESPONSE_LEN, cesq);
+	err = nrf_modem_at_cmd_async(lte_signal_quality_decode, cesq);
 	if (err) {
 		printf("%s: could not get signal quality err %d\n", err);
 		return (-1);
 	}
-
-	lte_signal_quality_decode(buf);
 
 	return (0);
 }
