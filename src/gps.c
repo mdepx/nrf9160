@@ -41,6 +41,8 @@
 
 #include <ftoa/ftoa.h>
 
+#include <machine/vfp.h>
+
 #include <nrfxlib/nrf_modem/include/nrf_modem_gnss.h>
 #include "gps.h"
 
@@ -114,8 +116,13 @@ fpu_test(void)
 	float a;
 	float b;
 	int i;
+	struct pcb *pcb;
 
 	td = mdx_thread_create("test", 1, 10000, 4096, test_thr, NULL);
+	vfp_control(true);
+	pcb = &td->td_pcb;
+	pcb->pcb_flags |= PCB_FLAGS_FPU;
+
 	mdx_sched_add(td);
 
 	while (1) {
