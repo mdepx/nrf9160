@@ -334,3 +334,17 @@ nrf_modem_os_sem_take(void *arg, int timeout)
 
 	return (0);
 }
+
+void
+nrf_modem_os_trace_irq_disable(void)
+{
+
+	printf("%s: implement me\n", __func__);
+}
+
+void
+nrf_modem_os_trace_irq_enable(void)
+{
+
+	printf("%s: implement me\n", __func__);
+}
