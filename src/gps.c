@@ -204,52 +204,54 @@ gnss_event_handler(int event)
 {
 	struct nrf_modem_gnss_nmea_data_frame nmea_data;
 	struct nrf_modem_gnss_pvt_data_frame pvt;
-	bool blocked;
-	bool data_avail;
 	char lat[32];
 	char lon[32];
-
-	blocked = false;
-	data_avail = false;
+	int error;
 
 	switch (event) {
 	case NRF_MODEM_GNSS_EVT_PVT:
-		nrf_modem_gnss_read(&pvt, sizeof(pvt),
+		error = nrf_modem_gnss_read(&pvt, sizeof(pvt),
 		    NRF_MODEM_GNSS_DATA_PVT);
-		print_stats(&pvt);
-		if (pvt.flags &
-		    NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME) {
-			blocked = true;
-			printf("GPS blocked\n");
+		if (error != 0) {
+			printf("%s: Could not read PVT\n", __func__);
 			break;
 		}
-		blocked = false;
+
+		print_stats(&pvt);
+
+		if (pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_NOT_ENOUGH_WINDOW_TIME){
+			printf("%s: GPS blocked\n", __func__);
+			break;
+		}
 
 		if (pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_DEADLINE_MISSED) {
-			printf("pvt deadline missed\n");
+			printf("%s: pvt deadline missed\n", __func__);
 			break;
 		}
 
 		if (pvt.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
 			ftoa(pvt.latitude, lat, -1);
 			ftoa(pvt.longitude, lon, -1);
-			printf("pvt data: latitude %s longitude %s\n",
-			    lat, lon);
-			data_avail = true;
+			printf("%s: pvt data: latitude %s longitude %s\n",
+			    __func__, lat, lon);
 		}
+		break;
 
-		break;
 	case NRF_MODEM_GNSS_EVT_NMEA:
-		if (blocked == false && data_avail == true) {
-			printf("nmea data: %s\n", nmea_data.nmea_str);
-			data_avail = false;
-		}
+		error = nrf_modem_gnss_read(&nmea_data,
+		    sizeof(struct nrf_modem_gnss_nmea_data_frame),
+		    NRF_MODEM_GNSS_DATA_NMEA);
+		if (error == 0)
+			printf("%s: nmea data: %s", __func__,
+			    nmea_data.nmea_str);
 		break;
+
 	case NRF_MODEM_GNSS_EVT_AGPS_REQ:
-		printf("agps data id\n");
+		printf("%s: agps data id\n", __func__);
 		break;
+
 	default:
-		printf("unknown event id %d\n", event);
+		printf("%s: unknown event id %d\n", __func__, event);
 		break;
 	}
 }
