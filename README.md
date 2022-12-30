@@ -7,6 +7,7 @@ This is a demo app that establishes a connection to a HTTP server using Nordic B
 This app does not require zephyr, and uses [MDEPX](https://github.com/machdep/mdepx) rtos.
 
 Note: The latest modem firmware (version 1.3.3) is required.
+Note: This was tested on nRF9160-DK v1.1.0.
 
 For nRF9160-DK connect micro usb cable to J4 usb socket.
 
