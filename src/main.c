@@ -41,7 +41,6 @@
 #include <nrfxlib/nrf_modem/include/nrf_socket.h>
 #include <nrfxlib/nrf_modem/include/nrf_modem.h>
 #include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
-#include <nrfxlib/nrf_modem/include/nrf_modem_platform.h>
 #include <nrfxlib/nrf_modem/include/nrf_modem_at.h>
 
 #include <machine/vfp.h>
@@ -104,8 +103,15 @@ static int ready_to_send;
 
 CTASSERT(NRF_MODEM_OS_SHMEM_CTRL_SIZE <= 0x1000);
 
-static const nrf_modem_init_params_t init_params = {
-	.ipc_irq_prio = NRF_MODEM_NETWORK_IRQ_PRIORITY,
+static void
+nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
+{
+
+	printf("%s: implement me\n", __func__);
+}
+
+static struct nrf_modem_init_params init_params = {
+	.ipc_irq_prio = 0,
 	.shmem.ctrl = {
 		.base = NRF_MODEM_OS_SHMEM_CTRL_ADDR,
 		.size = NRF_MODEM_OS_SHMEM_CTRL_SIZE,
@@ -124,6 +130,7 @@ static const nrf_modem_init_params_t init_params = {
 		.size =	NRF_MODEM_OS_TRACE_SIZE,
 	},
 #endif
+	.fault_handler = nrf_modem_fault_handler
 };
 
 static char buf[AT_RESPONSE_LEN];
@@ -217,7 +224,8 @@ connect_to_server(void)
 
 	printf("Connecting to server...\n");
 
-	err = nrf_connect(fd, s, sizeof(struct nrf_sockaddr_in));
+	err = nrf_connect(fd, (struct nrf_sockaddr *)s,
+	    sizeof(struct nrf_sockaddr_in));
 	if (err != 0)
 		panic("TCP connect failed: err %d\n", err);
 
@@ -404,9 +412,9 @@ main(void)
 	nrf_uarte_register_callback(uart, nrf_input, NULL);
 
 	nrf_modem_init(&init_params, NORMAL_MODE);
-	nrf_modem_at_notif_handler_set(callback);
-
 	printf("nrf_modem library initialized\n");
+
+	nrf_modem_at_notif_handler_set(callback);
 
 	buffer_fill = 0;
 	ready_to_send = 0;

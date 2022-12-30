@@ -36,6 +36,9 @@
 #include <nrfxlib/nrf_modem/include/nrf_modem.h>
 #include <nrfxlib/nrf_modem/include/nrf_errno.h>
 
+#include "nrfx_errors.h"
+#include "nrfx_ipc.h"
+
 #define	NRF_MODEM_DEBUG
 #undef	NRF_MODEM_DEBUG
 
@@ -81,30 +84,26 @@ td_next(struct sleeping_thread *td0)
 }
 
 void
-nrf_modem_recoverable_error_handler(uint32_t error)
+nrf_modem_os_shutdown(void)
 {
 
-	printf("%s: error %d\n", __func__, error);
+	printf("%s\n", __func__);
 }
 
-static void
-trace_proxy_intr(void *arg, int irq)
-{
-
-	nrf_modem_trace_irq_handler();
-}
-
-static void
-rpc_proxy_intr(void *arg, int irq)
+void
+nrf_modem_os_event_notify(void)
 {
 	struct sleeping_thread *td;
 
-	dprintf(",");
-
-	nrf_modem_application_irq_handler();
-
 	for (td = td_first(); td != NULL; td = td_next(td))
 		mdx_sem_post(&td->sem);
+}
+
+static void
+ipc_intr(void *arg, int irq)
+{
+
+	nrfx_ipc_irq_handler();
 }
 
 void
@@ -119,13 +118,7 @@ nrf_modem_os_init(void)
 	if (!nvic)
 		panic("could not find nvic device\n");
 
-	mdx_intc_setup(nvic, ID_EGU1, rpc_proxy_intr, NULL);
-	mdx_intc_set_prio(nvic, ID_EGU1, 6);
-	mdx_intc_enable(nvic, ID_EGU1);
-
-	mdx_intc_setup(nvic, ID_EGU2, trace_proxy_intr, NULL);
-	mdx_intc_set_prio(nvic, ID_EGU2, 6);
-	mdx_intc_enable(nvic, ID_EGU2);
+	mdx_intc_setup(nvic, ID_IPC, ipc_intr, NULL);
 }
 
 int32_t
@@ -136,10 +129,13 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 	int err;
 	int tmout;
 
+	if (!nrf_modem_is_initialized())
+		return (-NRF_ESHUTDOWN);
+
 	val = *p_timeout;
 	if (val == 0) {
 		mdx_thread_yield();
-		return (NRF_ETIMEDOUT);
+		return (-NRF_EAGAIN);
 	}
 
 	if (val < 0)
@@ -165,8 +161,10 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 		dprintf("%s: timeout\n", __func__);
 		if (val == -1)
 			return (0);
-		return (NRF_ETIMEDOUT);
+		return (-NRF_EAGAIN);
 	}
+
+	printf(",");
 
 	return (0);
 }
@@ -176,47 +174,6 @@ nrf_modem_os_errno_set(int errno_val)
 {
 
 	dprintf("%s: %d\n", __func__, errno_val);
-}
-
-void
-nrf_modem_os_application_irq_clear(void)
-{
-
-	dprintf("%s\n", __func__);
-	mdx_intc_clear(nvic, ID_EGU1);
-}
-
-void
-nrf_modem_os_application_irq_set(void)
-{
-
-	dprintf("%s\n", __func__);
-	mdx_intc_set(nvic, ID_EGU1);
-}
-
-void
-nrf_modem_os_trace_irq_set(void)
-{
-
-	dprintf("%s\n", __func__);
-	mdx_intc_set(nvic, ID_EGU2);
-}
-
-void
-nrf_modem_os_trace_irq_clear(void)
-{
-
-	dprintf("%s\n", __func__);
-	mdx_intc_clear(nvic, ID_EGU2);
-}
-
-int32_t
-nrf_modem_os_trace_put(const uint8_t * const p_buffer, uint32_t buf_len)
-{
-
-	dprintf("%s\n", __func__);
-
-	return (0);
 }
 
 void *
@@ -336,15 +293,12 @@ nrf_modem_os_sem_take(void *arg, int timeout)
 }
 
 void
-nrf_modem_os_trace_irq_disable(void)
+nrf_modem_os_log(int level, const char *fmt, ...)
 {
+	va_list ap;
 
-	printf("%s: implement me\n", __func__);
-}
-
-void
-nrf_modem_os_trace_irq_enable(void)
-{
-
-	printf("%s: implement me\n", __func__);
+	va_start(ap, fmt);
+	printf(fmt, ap);
+	printf("\n");
+	va_end(ap);
 }
