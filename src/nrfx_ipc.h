@@ -43,5 +43,6 @@ void nrfx_ipc_receive_event_disable(uint8_t event_index);
 void nrfx_ipc_receive_event_enable(uint8_t event_index);
 void nrfx_ipc_uninit(void);
 void nrfx_ipc_config_load(nrfx_ipc_config_t const * p_config);
+void nrfx_ipc_irq_handler(void);
 
 #endif /* !_NRFX_IPC_H_ */

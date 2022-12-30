@@ -34,6 +34,7 @@
 #include <dev/intc/intc.h>
 
 #include <arm/nordicsemi/nrf9160.h>
+#include <arm/nordicsemi/nrf_ipc.h>
 
 #include "nrfx_errors.h"
 #include "nrfx_ipc.h"
@@ -129,4 +130,20 @@ nrfx_ipc_uninit(void)
 		nrf_ipc_configure_recv(dev, i, 0, NULL, NULL);
 
 	nrf_ipc_inten_chanmask(dev, 0xffffffff, false);
+}
+
+void
+nrfx_ipc_irq_handler(void)
+{
+	uint32_t pending;
+	int i;
+
+	pending = *(uint32_t *)(BASE_IPC + IPC_INTPEND);
+
+	for (i = 0; i < IPC_CONF_NUM; i++) {
+		if (pending & (1 << i)) {
+			*(uint32_t *)(BASE_IPC + IPC_EVENTS_RECEIVE(i)) = 0;
+			m_ipc_cb.handler(i, m_ipc_cb.p_context);
+		}
+	}
 }
