@@ -80,7 +80,7 @@ static const char psm_req[] = "AT+CPSMS=1,,,\"00000110\",\"00000000\"";
 static const char edrx_disable[] = "AT+CEDRXS=3";
 
 static const char magpio[] __unused = "AT%%XMAGPIO=1,0,0,1,1,1574,1577";
-static const char coex0[] __unused = "AT%%XCOEX0=1,1,1570,1580";
+static const char coex0[] __unused = "AT%%XCOEX0=1,1,1565,1586";
 
 /*
  * %XSYSTEMMODE=<M1_support>,<NB1_support>,<GNSS_support>,<LTE_preference>
@@ -333,8 +333,10 @@ lte_connect(void)
 	/* Set new system mode */
 	lte_at(catm1_gps);
 
-	/* GPS: nrf9160-DK only. */
+	/* GPS: NRF9160-DK only. */
 	lte_at(magpio);
+
+	/* GPS: NRF9160-DK and Thingy91 onboard antennas. */
 	lte_at(coex0);
 
 	/* Switch to power saving mode as required for GPS to operate. */
