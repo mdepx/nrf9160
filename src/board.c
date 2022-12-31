@@ -32,6 +32,8 @@
 
 #include <arm/nordicsemi/nrf9160.h>
 
+#include <machine/vfp.h>
+
 #define	EARLY_PRINTF
 #undef	EARLY_PRINTF
 
@@ -52,6 +54,7 @@ void
 board_init(void)
 {
 	mdx_device_t dev;
+	struct pcb *pcb;
 
 	/* Add some memory so OF could allocate devices and their softc. */
 	malloc_init();
@@ -81,6 +84,10 @@ board_init(void)
 	if (!dev)
 		panic("timer dev not found");
 	timer_sc = mdx_device_get_softc(dev);
+
+	vfp_control(true);
+	pcb = &curthread->td_pcb;
+	pcb->pcb_flags |= PCB_FLAGS_FPU;
 
 	printf("mdepx initialized\n");
 }
