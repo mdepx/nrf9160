@@ -2,9 +2,9 @@
 
 Nordicsemi nRF9160 is an ARM Cortex-M33 SiP (system in package) with support for LTE-M, NB-IoT and GPS.
 
-This is a demo app that establishes a connection to a HTTP server using Nordic BSD sockets.
+This demo app establishes a connection to an HTTP server using Nordic BSD sockets.
 
-This app does not require zephyr, and uses [MDEPX](https://github.com/machdep/mdepx) rtos.
+This app does not require zephyr, instead it uses [MDX RTOS](https://github.com/machdep/mdepx) rtos.
 
 Note: The latest modem firmware (version 1.3.3) is required.
 Note: This was tested on nRF9160-DK v1.1.0.
