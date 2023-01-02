@@ -43,8 +43,6 @@
 #include <nrfxlib/nrf_modem/include/nrf_modem_os.h>
 #include <nrfxlib/nrf_modem/include/nrf_modem_at.h>
 
-#include <machine/vfp.h>
-
 #include "gps.h"
 
 #define	AT_RESPONSE_LEN		128
@@ -401,12 +399,7 @@ int
 main(void)
 {
 	mdx_device_t uart;
-	struct pcb *pcb;
 	int error;
-
-	vfp_control(true);
-	pcb = &curthread->td_pcb;
-	pcb->pcb_flags |= PCB_FLAGS_FPU;
 
 	uart = mdx_device_lookup_by_name("nrf_uarte", 0);
 	if (!uart)
