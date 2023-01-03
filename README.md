@@ -26,7 +26,7 @@ This app depends on the [secure bootloader for nRF9160](https://github.com/machd
     $ make dtb
     $ make flash
 
-![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/nrf9160-dk.jpg)
+![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/nrf9160dk_030123.jpg)
 
 See the [firmware](https://github.com/machdep/md009) for an alternative board:
 ![alt text](https://raw.githubusercontent.com/machdep/nrf9160/master/images/md009.jpg)
