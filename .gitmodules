@@ -1,6 +1,6 @@
 [submodule "nrfxlib"]
 	path = nrfxlib
-	url = https://github.com/NordicPlayground/nrfxlib
+	url = https://github.com/nrfconnect/sdk-nrfxlib
 [submodule "mdepx"]
 	path = mdepx
 	url = https://github.com/mdepx/mdepx
