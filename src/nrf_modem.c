@@ -159,12 +159,8 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 
 	if (err == 0) {
 		dprintf("%s: timeout\n", __func__);
-		if (val == -1)
-			return (0);
 		return (-NRF_EAGAIN);
 	}
-
-	printf(",");
 
 	return (0);
 }
@@ -287,7 +283,7 @@ nrf_modem_os_sem_take(void *arg, int timeout)
 
 	err = mdx_sem_timedwait(sem, timeout == -1 ? 0 : timeout * 1000);
 	if (err == 0)
-		return (NRF_ETIMEDOUT);
+		return (-NRF_EAGAIN);
 
 	return (0);
 }
