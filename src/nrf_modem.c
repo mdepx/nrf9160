@@ -84,13 +84,6 @@ td_next(struct sleeping_thread *td0)
 }
 
 void
-nrf_modem_os_shutdown(void)
-{
-
-	printf("%s\n", __func__);
-}
-
-void
 nrf_modem_os_event_notify(void)
 {
 	struct sleeping_thread *td;
@@ -98,6 +91,18 @@ nrf_modem_os_event_notify(void)
 	for (td = td_first(); td != NULL; td = td_next(td))
 		mdx_sem_post(&td->sem);
 }
+
+void
+nrf_modem_os_shutdown(void)
+{
+	struct sleeping_thread *td;
+
+	printf("%s\n", __func__);
+
+	for (td = td_first(); td != NULL; td = td_next(td))
+		mdx_sem_post(&td->sem);
+}
+
 
 static void
 ipc_intr(void *arg, int irq)
@@ -121,6 +126,14 @@ nrf_modem_os_init(void)
 	mdx_intc_setup(nvic, ID_IPC, ipc_intr, NULL);
 }
 
+/*
+ * Return values for the nrf_modem_os_timedwait():
+ *
+ *  0 The thread is woken before the timeout expired.
+ *  -NRF_EAGAIN The timeout expired.
+ *  -NRF_ESHUTDOWN Modem is not initialized, or was shut down.
+ */
+
 int32_t
 nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 {
@@ -139,10 +152,11 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 	}
 
 	if (val < 0)
-		tmout = 0;
+		tmout = 500000;
 	else
 		tmout = val * 1000;
 
+	memset(&td, 0, sizeof(struct sleeping_thread));
 	mdx_sem_init(&td.sem, 0);
 
 	critical_enter();
@@ -157,7 +171,15 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 	list_remove(&td.node);
 	critical_exit();
 
+	if (!nrf_modem_is_initialized())
+		return (-NRF_ESHUTDOWN);
+
 	if (err == 0) {
+		if (val < 0) {
+			printf(";");
+			return (0);
+		}
+
 		dprintf("%s: timeout\n", __func__);
 		return (-NRF_EAGAIN);
 	}
