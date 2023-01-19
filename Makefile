@@ -22,8 +22,8 @@ dtb:
 	nrfjprog -f NRF91 --program obj/nrf9160dk.dtb.hex -r
 
 flash:
-	nrfjprog -f NRF91 --erasepage 0x40000-0x60000
-	nrfjprog -f NRF91 --program obj/nrf9160.hex -r
+	nrfjprog -s 960002963 -f NRF91 --erasepage 0x40000-0x60000
+	nrfjprog -s 960002963 -f NRF91 --program obj/nrf9160.hex -r
 
 objdump:
 	@${CROSS_COMPILE}objdump -d obj/${APP}.elf | less
