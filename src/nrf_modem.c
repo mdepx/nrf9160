@@ -51,6 +51,7 @@
 struct sleeping_thread {
 	struct entry node;
 	mdx_sem_t sem;
+	uint32_t context;
 };
 
 static struct entry sleeping_thread_list;
@@ -88,8 +89,10 @@ nrf_modem_os_event_notify(uint32_t context)
 {
 	struct sleeping_thread *td;
 
-	for (td = td_first(); td != NULL; td = td_next(td))
-		mdx_sem_post(&td->sem);
+	for (td = td_first(); td != NULL; td = td_next(td)) {
+		if ((td->context == context) || (context == 0))
+			mdx_sem_post(&td->sem);
+	}
 }
 
 void
@@ -158,6 +161,7 @@ nrf_modem_os_timedwait(uint32_t context, int32_t * p_timeout)
 
 	memset(&td, 0, sizeof(struct sleeping_thread));
 	mdx_sem_init(&td.sem, 0);
+	td.context = context;
 
 	critical_enter();
 	list_append(&sleeping_thread_list, &td.node);
