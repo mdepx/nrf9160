@@ -84,7 +84,7 @@ td_next(struct sleeping_thread *td0)
 }
 
 void
-nrf_modem_os_event_notify(void)
+nrf_modem_os_event_notify(uint32_t context)
 {
 	struct sleeping_thread *td;
 
@@ -319,4 +319,16 @@ nrf_modem_os_log(int level, const char *fmt, ...)
 	printf(fmt, ap);
 	printf("\n");
 	va_end(ap);
+}
+
+int
+nrf_modem_os_sleep(uint32_t timeout)
+{
+
+	if (timeout == NRF_MODEM_OS_NO_WAIT || timeout == NRF_MODEM_OS_FOREVER)
+		return (-NRF_EINVAL);
+
+	mdx_usleep(timeout * 1000);
+
+	return (0);
 }

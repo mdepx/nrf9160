@@ -406,7 +406,7 @@ main(void)
 		panic("uart dev not found");
 	nrf_uarte_register_callback(uart, nrf_input, NULL);
 
-	nrf_modem_init(&init_params, NORMAL_MODE);
+	nrf_modem_init(&init_params);
 	printf("nrf_modem library initialized\n");
 
 	nrf_modem_at_notif_handler_set(callback);
