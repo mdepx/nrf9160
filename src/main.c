@@ -101,6 +101,16 @@ static int ready_to_send;
 
 CTASSERT(NRF_MODEM_OS_SHMEM_CTRL_SIZE <= 0x1000);
 
+enum {
+	LTE_CEREG_NOT_REGISTERED	= 0,
+	LTE_CEREG_REGISTERED_HOME	= 1,
+	LTE_CEREG_SEARCHING		= 2,
+	LTE_CEREG_REGISTRATION_DENIED	= 3,
+	LTE_CEREG_UNKNOWN		= 4,
+	LTE_CEREG_REGISTERED_ROAMING	= 5,
+	LTE_CEREG_UICC_FAIL		= 90
+};
+
 static void
 nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
@@ -297,18 +307,27 @@ lte_wait(void)
 		    __func__, err, status, cell_id);
 
 		switch (status) {
-		case 1:
+		case LTE_CEREG_NOT_REGISTERED:
+			printf("Not registered\n");
+			break;
+		case LTE_CEREG_REGISTERED_HOME:
 			printf("Registered, home network.\n");
 			return (0);
-		case 2:
+		case LTE_CEREG_SEARCHING:
 			printf("Searching for a network...\n");
 			break;
-		case 3:
+		case LTE_CEREG_REGISTRATION_DENIED:
 			printf("Registration denied\n");
 			return (1);
-		case 5:
+		case LTE_CEREG_UNKNOWN:
+			printf("Status is unknown\n");
+			break;
+		case LTE_CEREG_REGISTERED_ROAMING:
 			printf("Registered, roaming.\n");
 			return (0);
+		case LTE_CEREG_UICC_FAIL:
+			printf("SIM card failure.\n");
+			return (1);
 		}
 
 		mdx_usleep(1000000);
