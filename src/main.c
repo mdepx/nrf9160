@@ -108,6 +108,12 @@ nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 	printf("%s: implement me\n", __func__);
 }
 
+static void nrf_modem_lib_dfu_handler(uint32_t dfu_res)
+{
+
+	printf("%s: implement me\n", __func__);
+}
+
 static struct nrf_modem_init_params init_params = {
 	.ipc_irq_prio = 0,
 	.shmem.ctrl = {
@@ -128,7 +134,8 @@ static struct nrf_modem_init_params init_params = {
 		.size =	NRF_MODEM_OS_TRACE_SIZE,
 	},
 #endif
-	.fault_handler = nrf_modem_fault_handler
+	.fault_handler = nrf_modem_fault_handler,
+	.dfu_handler = nrf_modem_lib_dfu_handler,
 };
 
 static char buf[AT_RESPONSE_LEN];
@@ -166,7 +173,8 @@ lte_signal(void)
 	int err;
 	err = nrf_modem_at_cmd_async(lte_signal_quality_decode, cesq);
 	if (err) {
-		printf("%s: could not get signal quality err %d\n", err);
+		printf("%s: could not get signal quality err %d\n",
+		    __func__, err);
 		return (-1);
 	}
 
@@ -187,15 +195,18 @@ connect_to_server(void)
 	struct nrf_sockaddr_in local_addr;
 	struct nrf_sockaddr_in *s;
 	uint8_t *ip;
+	int pdn_id;
 	int err;
 	int fd;
+
+	pdn_id = 0;
 
 	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
 	if (fd < 0)
 		panic("failed to create socket");
 
-	nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_BINDTODEVICE, "0",
-	    strlen("0"));
+	nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_BINDTOPDN, &pdn_id,
+	    sizeof(pdn_id));
 
 	err = nrf_getaddrinfo(TCP_HOST, "pdn0", &hints, &server_addr);
 	if (err != 0)
@@ -207,13 +218,11 @@ connect_to_server(void)
 	    ip[0], ip[1], ip[2], ip[3]);
 
 	s->sin_port = nrf_htons(TCP_PORT);
-	s->sin_len = sizeof(struct nrf_sockaddr_in);
 
 	bzero(&local_addr, sizeof(struct nrf_sockaddr_in));
 	local_addr.sin_family = NRF_AF_INET;
 	local_addr.sin_port = nrf_htons(0);
 	local_addr.sin_addr.s_addr = 0;
-	local_addr.sin_len = sizeof(struct nrf_sockaddr_in);
 
 	err = nrf_bind(fd, (struct nrf_sockaddr *)&local_addr,
 	    sizeof(local_addr));
@@ -291,6 +300,9 @@ lte_wait(void)
 		case 1:
 			printf("Registered, home network.\n");
 			return (0);
+		case 2:
+			printf("Searching for a network...\n");
+			break;
 		case 3:
 			printf("Registration denied\n");
 			return (1);
@@ -406,8 +418,12 @@ main(void)
 		panic("uart dev not found");
 	nrf_uarte_register_callback(uart, nrf_input, NULL);
 
-	nrf_modem_init(&init_params);
-	printf("nrf_modem library initialized\n");
+	error = nrf_modem_init(&init_params);
+	if (error)
+		panic("could not initialize nrf_modem library, error %d\n",
+		    error);
+
+	printf("nrf_modem library initialized.\n");
 
 	nrf_modem_at_notif_handler_set(callback);
 

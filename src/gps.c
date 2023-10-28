@@ -246,8 +246,8 @@ gnss_event_handler(int event)
 			    nmea_data.nmea_str);
 		break;
 
-	case NRF_MODEM_GNSS_EVT_AGPS_REQ:
-		printf("%s: agps data id\n", __func__);
+	case NRF_MODEM_GNSS_EVT_AGNSS_REQ:
+		printf("%s: agns data id\n", __func__);
 		break;
 
 	default:
