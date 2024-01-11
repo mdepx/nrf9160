@@ -247,6 +247,8 @@ connect_to_server(void)
 		panic("TCP connect failed: err %d\n", err);
 
 	printf("Successfully connected to the server\n");
+
+	nrf_close(fd);
 }
 
 static int __unused
