@@ -44,6 +44,7 @@
 #include <nrfxlib/nrf_modem/include/nrf_modem_at.h>
 
 #include "gps.h"
+#include "lcd.h"
 
 #define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
@@ -433,6 +434,10 @@ main(void)
 {
 	mdx_device_t uart;
 	int error;
+
+#if 0
+	lcd_init();
+#endif
 
 	uart = mdx_device_lookup_by_name("nrf_uarte", 0);
 	if (!uart)
