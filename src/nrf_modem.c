@@ -48,6 +48,9 @@
 #define	dprintf(fmt, ...)
 #endif
 
+#define NRF_MODEM_OS_SEM_MAX NRF_MODEM_OS_NUM_SEM_REQUIRED
+#define NRF_MODEM_OS_MTX_MAX NRF_MODEM_OS_NUM_MUTEX_REQUIRED
+
 struct sleeping_thread {
 	struct entry node;
 	mdx_sem_t sem;
@@ -56,6 +59,10 @@ struct sleeping_thread {
 
 static struct entry sleeping_thread_list;
 static mdx_device_t nvic;
+static mdx_sem_t nrf_modem_os_semaphores[NRF_MODEM_OS_SEM_MAX];
+static mdx_mutex_t nrf_modem_os_mutexes[NRF_MODEM_OS_MTX_MAX];
+static uint8_t sem_used = 0;
+static uint8_t mutex_used = 0;
 
 static struct sleeping_thread *
 td_first(void)
@@ -259,11 +266,6 @@ nrf_modem_os_busywait(int32_t usec)
 	udelay(usec);
 }
 
-#define NRF_MODEM_OS_SEM_MAX NRF_MODEM_OS_NUM_SEM_REQUIRED
-
-static mdx_sem_t nrf_modem_os_semaphores[NRF_MODEM_OS_SEM_MAX];
-static uint8_t used = 0;
-
 int
 nrf_modem_os_sem_init(void **arg, unsigned int initial_count,
     unsigned int limit)
@@ -277,9 +279,9 @@ nrf_modem_os_sem_init(void **arg, unsigned int initial_count,
 		if (&nrf_modem_os_semaphores[i] == sem)
 			goto reinit;
 
-	KASSERT(used < NRF_MODEM_OS_SEM_MAX, ("Max semaphores reached."));
+	KASSERT(sem_used < NRF_MODEM_OS_SEM_MAX, ("Max semaphores reached."));
 
-	sem = &nrf_modem_os_semaphores[used++];
+	sem = &nrf_modem_os_semaphores[sem_used++];
 
 	*arg = sem;
 
@@ -333,6 +335,51 @@ nrf_modem_os_sleep(uint32_t timeout)
 		return (-NRF_EINVAL);
 
 	mdx_usleep(timeout * 1000);
+
+	return (0);
+}
+
+int
+nrf_modem_os_mutex_init(void **arg)
+{
+	mdx_mutex_t *mtx;
+	int i;
+
+	mtx = *arg;
+
+	for (i = 0; i < NRF_MODEM_OS_MTX_MAX; i++)
+		if (&nrf_modem_os_mutexes[i] == mtx)
+			goto reinit;
+
+	KASSERT(mutex_used < NRF_MODEM_OS_MTX_MAX, ("Max mutex reached."));
+
+	mtx = &nrf_modem_os_mutexes[mutex_used++];
+
+	*arg = mtx;
+
+reinit:
+	mdx_mutex_init(mtx);
+
+	return (0);
+}
+
+int
+nrf_modem_os_mutex_lock(void *mtx, int timeout)
+{
+
+	if (timeout == -1)
+		mdx_mutex_lock(mtx);
+	else
+		mdx_mutex_timedlock(mtx, timeout * 1000);
+
+	return (0);
+}
+
+int
+nrf_modem_os_mutex_unlock(void *mtx)
+{
+
+	mdx_mutex_unlock(mtx);
 
 	return (0);
 }
