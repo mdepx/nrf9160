@@ -7,10 +7,12 @@ CMD = python3 -B ${OSDIR}/tools/emitter.py
 all:
 	@${CMD} -j mdepx.conf
 	@${CROSS_COMPILE}objcopy -O ihex obj/${APP}.elf obj/${APP}.hex
+	@${CROSS_COMPILE}size obj/${APP}.elf
 
 debug:
 	@${CMD} -d mdepx.conf
 	@${CROSS_COMPILE}objcopy -O ihex obj/${APP}.elf obj/${APP}.hex
+	@${CROSS_COMPILE}size obj/${APP}.elf
 
 dtb:
 	cpp -nostdinc -Imdepx/dts -Imdepx/dts/arm -Imdepx/dts/common	\
