@@ -24,7 +24,7 @@ dtb:
 	nrfjprog -f NRF91 --program obj/nrf9160dk.dtb.hex -r
 
 flash:
-	nrfjprog -s 960002963 -f NRF91 --erasepage 0x40000-0x60000
+	nrfjprog -s 960002963 -f NRF91 --erasepage 0x40000-0xb2000
 	nrfjprog -s 960002963 -f NRF91 --program obj/nrf9160.hex -r
 
 objdump:
