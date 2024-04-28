@@ -113,6 +113,7 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 
 	/* nrf_fcntl(fd, NRF_F_SETFL, NRF_O_NONBLOCK); */
 
+	/* This seems to be optional. */
 	error = nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_BINDTOPDN, &pdn_id,
 	    sizeof(pdn_id));
 	if (error) {
