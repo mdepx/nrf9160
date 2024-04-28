@@ -45,6 +45,7 @@
 
 #include "gps.h"
 #include "lcd.h"
+#include "ntp.h"
 
 #define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
@@ -74,7 +75,9 @@ static const char cgpaddr[] __unused = "AT+CGPADDR";
 static const char cesq[] __unused = "AT+CESQ";
 static const char cpsms[] __unused = "AT+CPSMS=";
 
+/* Power Save Mode.*/
 static const char psm_req[] = "AT+CPSMS=1,,,\"00000110\",\"00000000\"";
+
 /* Request eDRX to be disabled */
 static const char edrx_disable[] = "AT+CEDRXS=3";
 
@@ -195,7 +198,7 @@ lte_signal(void)
 #define	PORT_MAX_SIZE	5 /* 0xFFFF = 65535 */
 #define	PDN_ID_MAX_SIZE	2 /* 0..10 */
 
-struct nrf_addrinfo hints = {
+static struct nrf_addrinfo hints = {
 	.ai_flags = NRF_AI_PDNSERV,
 };
 
@@ -389,6 +392,7 @@ lte_connect(void)
 	if (lte_wait() == 0) {
 		printf("LTE connected\n");
 		lte_signal();
+		ntp_main();
 		connect_to_server();
 	} else
 		printf("Failed to connect to LTE\n");
