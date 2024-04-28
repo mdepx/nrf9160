@@ -25,6 +25,7 @@
 
 #include <sys/cdefs.h>
 #include <sys/callout.h>
+#include <sys/endian.h>
 
 #include <nrfxlib/nrf_modem/include/nrf_socket.h>
 #include <arm/nordicsemi/nrf9160.h>
@@ -32,7 +33,7 @@
 
 #define	UDP_HOST	"time1.google.com"
 #define	UDP_PORT	123
-#define	NTP_TO_UNIX	2208988800ULL
+#define	NTP_TO_UNIX(x)	((x) - 2208988800ULL)
 
 static struct nrf_addrinfo hints = {
 	.ai_flags = NRF_AI_PDNSERV,
@@ -169,12 +170,32 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 	return (0);
 }
 
+static uint32_t
+ntp_to_unixtime(struct ntp_msg *ntp)
+{
+	uint32_t unixtime;
+
+	ntp->org_frac = htobe32(ntp->org_frac);
+	ntp->org_sec = htobe32(ntp->org_sec);
+	ntp->reftime_frac = htobe32(ntp->reftime_frac);
+	ntp->reftime_sec = htobe32(ntp->reftime_sec);
+	ntp->rec_frac = htobe32(ntp->rec_frac);
+	ntp->rec_sec = htobe32(ntp->rec_sec);
+	ntp->xmt_frac = htobe32(ntp->xmt_frac);
+	ntp->xmt_sec = htobe32(ntp->xmt_sec);
+
+	unixtime = NTP_TO_UNIX(ntp->xmt_sec);
+
+	return (unixtime);
+}
+
 int
 ntp_main(void)
 {
 	struct nrf_addrinfo *server_addr;
 	nrf_socklen_t addrlen;
 	struct ntp_msg ntp;
+	uint32_t unixtime;
 	int error;
 	int len;
 	int fd;
@@ -217,6 +238,10 @@ ntp_main(void)
 
 	printf("%s: Successfully received NTP response, len %d\n",
 	    __func__, len);
+
+	unixtime = ntp_to_unixtime(&ntp);
+
+	printf("Unix time: %d\n", unixtime);
 
 	nrf_close(fd);
 
