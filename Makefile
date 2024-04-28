@@ -36,9 +36,6 @@ objdump:
 readelf:
 	@${CROSS_COMPILE}readelf -a obj/${APP}.elf | less
 
-reset:
-	nrfjprog -f NRF91 -r
-
 clean:
 	@rm -rf obj/*
 
