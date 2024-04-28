@@ -105,7 +105,7 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 
 	fd = nrf_socket(NRF_AF_INET, NRF_SOCK_DGRAM, NRF_IPPROTO_UDP);
 	if (fd < 0) {
-		printf("%s: failed to create socket", __func__);
+		printf("%s: failed to create socket\n", __func__);
 		return (-1);
 	}
 
@@ -116,7 +116,7 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 	error = nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_BINDTOPDN, &pdn_id,
 	    sizeof(pdn_id));
 	if (error) {
-		printf("%s: could not bind to PDN", __func__);
+		printf("%s: could not bind to PDN\n", __func__);
 		return (error);
 	}
 
@@ -124,14 +124,14 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 	error = nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_SNDTIMEO, &timeout,
 	    sizeof(timeout));
 	if (error) {
-		printf("%s: could not set sock opt", __func__);
+		printf("%s: could not set sock opt\n", __func__);
 		return (error);
 	}
 
 	error = nrf_setsockopt(fd, NRF_SOL_SOCKET, NRF_SO_RCVTIMEO, &timeout,
 	    sizeof(timeout));
 	if (error) {
-		printf("%s: could not set sock opt", __func__);
+		printf("%s: could not set sock opt\n", __func__);
 		return (error);
 	}
 
@@ -150,7 +150,7 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 	error = nrf_bind(fd, (struct nrf_sockaddr *)&local_addr,
 	    sizeof(local_addr));
 	if (error) {
-		printf("%s: could not bind", __func__);
+		printf("%s: could not bind to socket\n", __func__);
 		return (error);
 	}
 
@@ -159,7 +159,7 @@ ntp_connect(int *fd0, struct nrf_addrinfo *server_addr)
 	error = nrf_connect(fd, (struct nrf_sockaddr *)s,
 	    sizeof(struct nrf_sockaddr_in));
 	if (error) {
-		printf("%s: could not connect to NTP server", __func__);
+		printf("%s: could not connect to NTP server\n", __func__);
 		return (error);
 	}
 
