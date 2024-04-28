@@ -98,8 +98,13 @@ static int ready_to_send;
 
 #define	NRF_MODEM_OS_SHMEM_CTRL_ADDR	0x20010000
 #define	NRF_MODEM_OS_SHMEM_CTRL_SIZE	NRF_MODEM_SHMEM_CTRL_SIZE
+/*
+ * Not sure if shm_alloc() memory should be in SHMEM_TX_ADDR region,
+ * so split a chunk for now.
+ */
 #define	NRF_MODEM_OS_SHMEM_TX_ADDR	0x20011000
-#define	NRF_MODEM_OS_SHMEM_TX_SIZE	0x7800
+#define	NRF_MODEM_OS_SHMEM_TX_SIZE	0x3800
+/* 0x4000 chunk reserved for shm_alloc(). */
 #define	NRF_MODEM_OS_SHMEM_RX_ADDR	0x20018800
 #define	NRF_MODEM_OS_SHMEM_RX_SIZE	0x7800
 
@@ -202,13 +207,14 @@ static struct nrf_addrinfo hints = {
 	.ai_flags = NRF_AI_PDNSERV,
 };
 
-static void
+static int
 connect_to_server(void)
 {
 	struct nrf_addrinfo *server_addr;
 	struct nrf_sockaddr_in local_addr;
 	struct nrf_sockaddr_in *s;
 	uint8_t *ip;
+	char *str;
 	int pdn_id;
 	int err;
 	int fd;
@@ -252,7 +258,18 @@ connect_to_server(void)
 
 	printf("Successfully connected to the server\n");
 
+	str = "GET / HTTP/1.0\n";
+	err = nrf_send(fd, str, strlen(str), 0);
+	if (err <= 0) {
+		printf("%s: could not send data, error %d\n", __func__, err);
+		nrf_close(fd);
+		return (err);
+	}
+	printf("%s: Transmitted %d bytes\n", __func__, err);
+
 	nrf_close(fd);
+
+	return (0);
 }
 
 static int __unused

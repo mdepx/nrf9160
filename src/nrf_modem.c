@@ -36,6 +36,8 @@
 #include <nrfxlib/nrf_modem/include/nrf_modem.h>
 #include <nrfxlib/nrf_modem/include/nrf_errno.h>
 
+#include "board.h"
+
 #include "nrfx_errors.h"
 #include "nrfx_ipc.h"
 
@@ -233,7 +235,7 @@ nrf_modem_os_shm_tx_alloc(size_t bytes)
 
 	dprintf("%s: %d\n", __func__, bytes);
 
-	addr = malloc(bytes);
+	addr = shm_alloc(bytes);
 
 	return (addr);
 }
@@ -244,7 +246,7 @@ nrf_modem_os_shm_tx_free(void *mem)
 
 	dprintf("%s\n", __func__);
 
-	free(mem);
+	shm_free(mem);
 }
 
 bool

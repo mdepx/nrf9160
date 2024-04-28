@@ -32,10 +32,13 @@
 
 #include <arm/nordicsemi/nrf9160.h>
 
+#include "board.h"
+
 #define	EARLY_PRINTF
 #undef	EARLY_PRINTF
 
 static struct nrf_timer_softc *timer_sc;
+static struct mdx_fl_zone mdx_fl_shm_tx_zone;
 
 #ifdef EARLY_PRINTF
 struct mdx_device uart;
@@ -48,6 +51,30 @@ udelay(uint32_t usec)
 	nrf_timer_udelay(timer_sc, usec);
 }
 
+/*
+ * nRF TX memory shared with modem. Must be below first 128k SRAM region.
+ */
+void *
+shm_alloc(size_t size)
+{
+	void *ret;
+
+	critical_enter();
+	ret = mdx_fl_malloc(&mdx_fl_shm_tx_zone, size);
+	critical_exit();
+
+	return (ret);
+}
+
+void
+shm_free(void *ptr)
+{
+
+	critical_enter();
+	mdx_fl_free(&mdx_fl_shm_tx_zone, ptr);
+	critical_exit();
+}
+
 void
 board_init(void)
 {
@@ -56,6 +83,10 @@ board_init(void)
 	/* Add some memory so OF could allocate devices and their softc. */
 	malloc_init();
 	malloc_add_region((void *)0x20030000, 0x10000);
+
+	/* See comment provided for nrf_modem_init() argument. */
+	mdx_fl_init(&mdx_fl_shm_tx_zone);
+	mdx_fl_add_region(&mdx_fl_shm_tx_zone, (void *)0x20014800, 0x4000);
 
 #ifdef EARLY_PRINTF
 	nrf_uarte_init(&uart, 0x40008000, 29, 28);
