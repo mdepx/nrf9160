@@ -437,6 +437,7 @@ int
 main(void)
 {
 	mdx_device_t uart;
+	char * version;
 	int error;
 
 #if 0
@@ -456,6 +457,9 @@ main(void)
 	printf("nrf_modem library initialized.\n");
 
 	nrf_modem_at_notif_handler_set(callback);
+
+	version = nrf_modem_build_version();
+	printf("nrf_modem version: %s\n", version);
 
 	buffer_fill = 0;
 	ready_to_send = 0;
