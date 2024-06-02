@@ -30,13 +30,18 @@
 
 #include "math.h"
 
+int get_random_number(uint8_t *out, int size);
+
 static uint64_t
 rand(void)
 {
+	uint64_t num;
 
-	/* TODO: Implement me. */
+	get_random_number((uint8_t *)&num, 8);
 
-	return (55555555);
+	printf("%s: %lu\n", num);
+
+	return (num);
 }
 
 static uint64_t
