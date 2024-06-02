@@ -97,7 +97,7 @@ static int buffer_fill;
 static int ready_to_send;
 
 #define	NRF_MODEM_OS_SHMEM_CTRL_ADDR	0x20010000
-#define	NRF_MODEM_OS_SHMEM_CTRL_SIZE	NRF_MODEM_SHMEM_CTRL_SIZE
+#define	NRF_MODEM_OS_SHMEM_CTRL_SIZE	NRF_MODEM_CELLULAR_SHMEM_CTRL_SIZE
 /*
  * Not sure if shm_alloc() memory should be in SHMEM_TX_ADDR region,
  * so split a chunk for now.
