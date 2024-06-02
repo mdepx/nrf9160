@@ -46,6 +46,7 @@
 #include "gps.h"
 #include "lcd.h"
 #include "ntp.h"
+#include "math.h"
 
 #define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
@@ -482,6 +483,8 @@ main(void)
 	ready_to_send = 0;
 
 	lte_connect();
+
+	math_test();
 
 	error = gps_init();
 	if (error)
