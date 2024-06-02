@@ -39,7 +39,7 @@ rand(void)
 
 	get_random_number((uint8_t *)&num, 8);
 
-	printf("%s: %lu\n", num);
+	printf("%s: %lu\n", __func__, num);
 
 	return (num);
 }
