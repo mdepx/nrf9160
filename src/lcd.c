@@ -72,14 +72,14 @@ static void
 pin_set(int pin)
 {
 
-	mdx_gpio_set(gpio_dev, pin, 1);
+	mdx_gpio_set(gpio_dev, 0, pin, 1);
 }
 
 static void
 pin_clr(int pin)
 {
 
-	mdx_gpio_set(gpio_dev, pin, 0);
+	mdx_gpio_set(gpio_dev, 0, pin, 0);
 }
 
 static void
@@ -207,14 +207,14 @@ lcd_init(void)
 
 	gpio_dev = dev;
 
-	mdx_gpio_configure(dev, LCD_EXTMODE, MDX_GPIO_OUTPUT);
-	mdx_gpio_configure(dev, LCD_EXTCOMIN, MDX_GPIO_OUTPUT);
+	mdx_gpio_configure(dev, 0, LCD_EXTMODE, MDX_GPIO_OUTPUT);
+	mdx_gpio_configure(dev, 0, LCD_EXTCOMIN, MDX_GPIO_OUTPUT);
 	pin_set(LCD_EXTMODE);
 	pin_set(LCD_EXTCOMIN);
-	mdx_gpio_configure(dev, LCD_CS, MDX_GPIO_OUTPUT);
-	mdx_gpio_configure(dev, LCD_SCK, MDX_GPIO_OUTPUT);
-	mdx_gpio_configure(dev, LCD_MOSI, MDX_GPIO_OUTPUT);
-	mdx_gpio_configure(dev, LCD_DISP, MDX_GPIO_OUTPUT);
+	mdx_gpio_configure(dev, 0, LCD_CS, MDX_GPIO_OUTPUT);
+	mdx_gpio_configure(dev, 0, LCD_SCK, MDX_GPIO_OUTPUT);
+	mdx_gpio_configure(dev, 0, LCD_MOSI, MDX_GPIO_OUTPUT);
+	mdx_gpio_configure(dev, 0, LCD_DISP, MDX_GPIO_OUTPUT);
 
 	lcd_reset();
 
