@@ -4,6 +4,9 @@ OSDIR = mdepx
 
 CMD = python3 -B ${OSDIR}/tools/emitter.py
 
+# Set your jlink id
+ADAPTOR_ID ?= 1050964301
+
 all:
 	@${CMD} -j mdepx.conf
 	@${CROSS_COMPILE}objcopy -O ihex obj/${APP}.elf obj/${APP}.hex
@@ -24,11 +27,11 @@ dtb:
 	nrfjprog -f NRF91 --program obj/nrf9160dk.dtb.hex -r
 
 flash:
-	nrfjprog -s 960002963 -f NRF91 --erasepage 0x40000-0xb2000
-	nrfjprog -s 960002963 -f NRF91 --program obj/nrf9160.hex -r
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --erasepage 0x40000-0xb2000
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --program obj/nrf9160.hex -r
 
 reset:
-	nrfjprog -s 960002963 -f NRF91 --reset
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --reset
 
 objdump:
 	@${CROSS_COMPILE}objdump -d obj/${APP}.elf | less
