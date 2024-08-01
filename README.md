@@ -4,10 +4,10 @@ Nordicsemi nRF9160 is an ARM Cortex-M33 SiP (system in package) with support for
 
 This demo app establishes a connection to an HTTP server using Nordic BSD sockets.
 
-This app does not require zephyr, instead it uses [MDX RTOS](https://github.com/machdep/mdepx).
+This app does not require zephyr, instead it uses [MDEPX RTOS](https://github.com/machdep/mdepx).
 
 Note: The latest modem firmware (version 1.3.3) is required.
-Note: This was tested on nRF9160-DK v1.1.0.
+Note: This was tested on nRF9160-DK v1.1.0 and nRF9161-DK v1.0.0.
 
 For nRF9160-DK connect micro usb cable to J4 usb socket.
 
