@@ -7,9 +7,12 @@ This demo app establishes a connection to an HTTP server using Nordic BSD socket
 This app does not require zephyr, instead it uses [MDEPX RTOS](https://github.com/machdep/mdepx).
 
 Note: The latest modem firmware (version 1.3.3) is required.
+
 Note: This was tested on nRF9160-DK v1.1.0 and nRF9161-DK v1.0.0.
 
 For nRF9160-DK connect micro usb cable to J4 usb socket.
+
+For nRF9161-DK use USB-C connector.
 
 This app depends on the [secure bootloader for nRF9160](https://github.com/machdep/nrf9160-boot).
 
