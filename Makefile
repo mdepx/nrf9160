@@ -23,8 +23,8 @@ dtb:
 	    nrf9160dk.dts -O obj/nrf9160dk.dts
 	dtc -I dts -O dtb obj/nrf9160dk.dts -o obj/nrf9160dk.dtb
 	bin2hex.py --offset=1015808 obj/nrf9160dk.dtb obj/nrf9160dk.dtb.hex
-	nrfjprog -f NRF91 --erasepage 0xf8000-0xfc000
-	nrfjprog -f NRF91 --program obj/nrf9160dk.dtb.hex -r
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --erasepage 0xf8000-0xfc000
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --program obj/nrf9160dk.dtb.hex -r
 
 flash:
 	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --erasepage 0x40000-0xb2000
