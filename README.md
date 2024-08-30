@@ -16,14 +16,23 @@ For nRF9161-DK use USB-C connector.
 
 This app depends on the [secure bootloader for nRF9160](https://github.com/machdep/nrf9160-boot).
 
-### Set up your environment
-    $ sudo apt install gcc-arm-linux-gnueabi
-    $ export CROSS_COMPILE=arm-linux-gnueabi-
+### Set up DT tools
+    $ sudo apt install device-tree-compiler python3-intelhex
+
+### Set up compiler
+    $ sudo apt install gcc-arm-none-eabi
+    $ export CROSS_COMPILE=arm-none-eabi-
 
 ### Get sources and build the project
     $ git clone --recursive https://github.com/machdep/nrf9160
     $ cd nrf9160
     $ make clean all
+
+## Install nrfjprog
+
+Download from nordicsemi.com, then (ubuntu example):
+
+    $ sudo dpkg -i ./nrf-command-line-tools_10.24.2_amd64.deb
 
 ## Program the chip using nrfjprog
     $ make dtb
