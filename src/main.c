@@ -312,7 +312,7 @@ static int
 lte_wait(void)
 {
 	uint32_t cell_id;
-	uint16_t status;
+	int status;
 	int err;
 
 	printf("Awaiting registration in the LTE-M network...\n");

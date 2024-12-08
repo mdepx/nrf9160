@@ -29,8 +29,8 @@
 #include "nrf_wifi.h"
 #include "config.h"
 
-#include "nrfxlib/nrf_wifi/os_if/inc/osal_ops.h"
-#include "nrfxlib/nrf_wifi/os_if/inc/osal_api.h"
+#include <lib/nrf_wifi/os_if/inc/osal_ops.h>
+#include <lib/nrf_wifi/os_if/inc/osal_api.h>
 
 static void *
 mdx_shim_mem_alloc(size_t size)
