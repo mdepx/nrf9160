@@ -368,7 +368,7 @@ lte_at(const char *cmd)
 	err = nrf_modem_at_printf(cmd);
 	if (err)
 		printf("%s: Could not issue cmd %s, err %d\n", __func__,
-		    cmd, err);
+		    cmd, nrf_modem_at_err_type(err));
 
 	return (err);
 }
