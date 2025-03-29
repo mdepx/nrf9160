@@ -10,11 +10,13 @@ ADAPTOR_ID ?= 1050964301
 all:
 	@${CMD} -j mdepx.conf
 	@${CROSS_COMPILE}objcopy -O ihex obj/${APP}.elf obj/${APP}.hex
+	@${CROSS_COMPILE}objcopy -O binary obj/${APP}.elf obj/${APP}.bin
 	@${CROSS_COMPILE}size obj/${APP}.elf
 
 debug:
 	@${CMD} -d mdepx.conf
 	@${CROSS_COMPILE}objcopy -O ihex obj/${APP}.elf obj/${APP}.hex
+	@${CROSS_COMPILE}objcopy -O binary obj/${APP}.elf obj/${APP}.bin
 	@${CROSS_COMPILE}size obj/${APP}.elf
 
 dtb:
@@ -33,6 +35,9 @@ flash:
 
 reset:
 	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --reset
+
+recover:
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --recover
 
 objdump:
 	@${CROSS_COMPILE}objdump -d obj/${APP}.elf | less
