@@ -26,6 +26,7 @@
 #include <sys/cdefs.h>
 #include <sys/callout.h>
 #include <sys/endian.h>
+#include <time.h>
 
 #include <nrfxlib/nrf_modem/include/nrf_socket.h>
 #include <arm/nordicsemi/nrf9160.h>
@@ -189,6 +190,25 @@ ntp_to_unixtime(struct ntp_msg *ntp)
 	return (unixtime);
 }
 
+static int
+print_time(uint32_t unixtime)
+{
+	char time[50];
+	struct tm result;
+	struct tm *t;
+
+	t = gmtime_r(&unixtime, &result);
+	if (t == NULL)
+		return (-1);
+
+	strftime(time, sizeof(time), "%d %B %Y, %I:%M%p", t);
+
+	printf("Current Unix Time: %d\n", unixtime);
+	printf("Current GMT Time %s\n", time);
+
+	return (0);
+}
+
 int
 ntp_main(void)
 {
@@ -240,8 +260,7 @@ ntp_main(void)
 	    __func__, len);
 
 	unixtime = ntp_to_unixtime(&ntp);
-
-	printf("Unix time: %d\n", unixtime);
+	print_time(unixtime);
 
 	nrf_close(fd);
 
