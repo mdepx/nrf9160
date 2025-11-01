@@ -192,6 +192,19 @@ lte_signal(void)
 	/* Extended signal quality */
 	int err;
 	err = nrf_modem_at_cmd_async(lte_signal_quality_decode, cesq);
+#if 0
+	int rsrq;
+	int rsrp;
+	err = nrf_modem_at_scanf(cesq,
+		"+CESQ: "
+		"%*u,"          /* <rxlev> */
+		"%*u,"          /* <ber> */
+		"%*u,"          /* <rscp> */
+		"%*u,"          /* <echo> */
+		"%u,"           /* <rsrq> */
+		"%u,",          /* <rsrp> */
+		&rsrq, &rsrp);
+#endif
 	if (err) {
 		printf("%s: could not get signal quality err %d\n",
 		    __func__, err);
