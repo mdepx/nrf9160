@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2018-2024 Ruslan Bukin <br@bsdpad.com>
+ * Copyright (c) 2018-2025 Ruslan Bukin <br@bsdpad.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -47,6 +47,7 @@
 #include "lcd.h"
 #include "ntp.h"
 #include "math.h"
+#include "http.h"
 
 #define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
@@ -427,6 +428,8 @@ lte_connect(void)
 		connect_to_server();
 	} else
 		printf("Failed to connect to LTE\n");
+
+	httpc_main();
 
 	mdx_usleep(500000);
 
