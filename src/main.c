@@ -412,6 +412,10 @@ lte_connect(void)
 	lte_at(cind);
 	lte_at(edrx_req);
 
+	/* Power level 1: Low Power */
+	/* Power level 4: High performance */
+	lte_at("AT%%XDATAPRFL=4");
+
 	/* Lock bands 3,4,13,20. */
 	lte_at(lock_bands);
 
