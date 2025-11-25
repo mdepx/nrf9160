@@ -30,7 +30,7 @@ dtb:
 	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --program obj/nrf9160dk.dtb.hex -r
 
 flash:
-	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --erasepage 0x40000-0xbc000
+	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --erasepage 0x40000-0xcd000
 	nrfjprog -s ${ADAPTOR_ID} -f NRF91 --program obj/nrf9160.hex -r
 
 reset:
