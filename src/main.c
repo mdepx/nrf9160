@@ -473,13 +473,6 @@ callback(const char *notif)
 	printf("%s: %s\n", __func__, notif);
 }
 
-static void
-dect_handler(const struct nrf_modem_dect_phy_event *event)
-{
-
-	printf("%s: %p\n", __func__, event);
-}
-
 int
 main(void)
 {
