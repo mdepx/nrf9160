@@ -48,6 +48,7 @@
 #include "ntp.h"
 #include "math.h"
 #include "http.h"
+#include "dect.h"
 
 #define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
@@ -126,7 +127,8 @@ static void
 nrf_modem_fault_handler(struct nrf_modem_fault_info *fault_info)
 {
 
-	printf("%s: implement me\n", __func__);
+	printf("%s: reason %x, pc %x\n", __func__, fault_info->reason,
+	    fault_info->program_counter);
 }
 
 static void nrf_modem_lib_dfu_handler(uint32_t dfu_res)
@@ -471,6 +473,13 @@ callback(const char *notif)
 	printf("%s: %s\n", __func__, notif);
 }
 
+static void
+dect_handler(const struct nrf_modem_dect_phy_event *event)
+{
+
+	printf("%s: %p\n", __func__, event);
+}
+
 int
 main(void)
 {
@@ -493,6 +502,10 @@ main(void)
 		    error);
 
 	printf("nrf_modem library initialized.\n");
+
+#if 0
+	dect_main();
+#endif
 
 	nrf_modem_at_notif_handler_set(callback);
 
