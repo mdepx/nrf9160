@@ -29,12 +29,17 @@
 #include "nrf_wifi.h"
 #include "config.h"
 
+#include <lib/nrf_wifi/os_if/inc/osal_structs.h>
 #include <lib/nrf_wifi/os_if/inc/osal_ops.h>
 #include <lib/nrf_wifi/os_if/inc/osal_api.h>
+#include <lib/nrf_wifi/fw_if/umac_if/inc/system/fmac_api.h>
+#include <lib/nrf_wifi/fw_if/umac_if/inc/system/fmac_structs.h>
 
 static void *
 mdx_shim_mem_alloc(size_t size)
 {
+
+	printf("%s\n", __func__);
 
 	return (NULL);
 }
@@ -43,6 +48,8 @@ static void *
 mdx_shim_mem_zalloc(size_t size)
 {
 
+	printf("%s\n", __func__);
+
 	return (NULL);
 }
 
@@ -50,6 +57,7 @@ static void
 mdx_shim_mem_free(void *buf)
 {
 
+	printf("%s\n", __func__);
 }
 
 static void *
@@ -73,6 +81,38 @@ mdx_shim_mem_cmp(const void *addr1, const void *addr2, size_t size)
 	return memcmp(addr1, addr2, size);
 }
 
+static uint32_t
+mdx_shim_qspi_read_reg32(void *priv, unsigned long addr)
+{
+
+	printf("%s\n", __func__);
+
+	return (0);
+}
+
+static void
+mdx_shim_qspi_write_reg32(void *priv, unsigned long addr, unsigned int val)
+{
+
+	printf("%s\n", __func__);
+}
+
+static void
+mdx_shim_qspi_cpy_from(void *priv, void *dest, unsigned long addr,
+    size_t count)
+{
+
+	printf("%s\n", __func__);
+}
+
+static void
+mdx_shim_qspi_cpy_to(void *priv, unsigned long addr, const void *src,
+    size_t count)
+{
+
+	printf("%s\n", __func__);
+}
+
 const struct nrf_wifi_osal_ops nrf_wifi_os_mdx_ops = {
 	.mem_alloc = mdx_shim_mem_alloc,
 	.mem_zalloc = mdx_shim_mem_zalloc,
@@ -81,12 +121,12 @@ const struct nrf_wifi_osal_ops nrf_wifi_os_mdx_ops = {
 	.mem_set = mdx_shim_mem_set,
 	.mem_cmp = mdx_shim_mem_cmp,
 
-#ifdef notyet
 	.qspi_read_reg32 = mdx_shim_qspi_read_reg32,
 	.qspi_write_reg32 = mdx_shim_qspi_write_reg32,
 	.qspi_cpy_from = mdx_shim_qspi_cpy_from,
 	.qspi_cpy_to = mdx_shim_qspi_cpy_to,
 
+#ifdef notyet
 	.spinlock_alloc = mdx_shim_spinlock_alloc,
 	.spinlock_free = mdx_shim_spinlock_free,
 	.spinlock_init = mdx_shim_spinlock_init,
@@ -169,6 +209,13 @@ const struct nrf_wifi_osal_ops nrf_wifi_os_mdx_ops = {
 void
 mdx_nrf_wifi_init(void)
 {
+	struct nrf_wifi_fmac_callbk_fns callbk_fns = { 0 };
+	struct nrf_wifi_data_config_params data_config = { 0 };
+	struct rx_buf_pool_params rx_buf_pools[MAX_NUM_OF_RX_QUEUES];
+	struct nrf_wifi_fmac_priv *priv;
 
 	nrf_wifi_osal_init(&nrf_wifi_os_mdx_ops);
+
+	priv = nrf_wifi_sys_fmac_init(&data_config, rx_buf_pools, &callbk_fns);
+	printf("%s: priv %p\n", __func__, priv);
 }

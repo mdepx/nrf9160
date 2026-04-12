@@ -49,6 +49,7 @@
 #include "math.h"
 #include "http.h"
 #include "dect.h"
+#include "wifi/nrf_wifi.h"
 
 #define	AT_RESPONSE_LEN		128
 #define	LC_MAX_READ_LENGTH	128
@@ -507,6 +508,10 @@ main(void)
 
 	buffer_fill = 0;
 	ready_to_send = 0;
+
+#if 0
+	mdx_nrf_wifi_init();
+#endif
 
 	lte_connect();
 
